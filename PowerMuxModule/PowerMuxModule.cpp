@@ -13,7 +13,7 @@ const uart_port_t SLAVE_UART = UART_NUM_2;
 #define MAX_PM_PER_CONNECTOR 20
 
 PowerMuxModule::PowerMuxController *pmm;
-PowerMuxModule::ConnectorPowerModules connectorPowerModules[NUM_OF_CONNECTORS + 1]; //TODO : populate this in PowerMuxControllerTask or from can
+PowerMuxModule::ConnectorPowerModules connectorPowerModules[NUM_OF_CONNECTORS + 1]; // TODO : populate this in PowerMuxControllerTask or from can
 
 namespace PowerMuxModule
 {
@@ -23,7 +23,7 @@ namespace PowerMuxModule
         uint8_t SubSet = (connId - 1) / 2;
         uint8_t SuperSetNum = (connId - 1) / 4;
         uint8_t SuperSetConnectorNum = (connId - 1) % 4;
-        
+
         ConnectorMuxesRelays ConnMuxRelay;
         memset(&ConnMuxRelay, 0, sizeof(ConnectorMuxesRelays));
         ConnMuxRelay.RelayNum = static_cast<uint16_t>(GpioModule::Contactor::SubSet_RelayBase) + (SubSet * 3) + ((OddNumberConnector) ? 1 : 3);
@@ -94,7 +94,7 @@ namespace PowerMuxModule
         else
             ConnMuxRelay.SuperSetInternalMux1NumStatus = GpioModule::GpioStatus::INVALID;
         if (ConnMuxRelay.SuperSetInternalMux2Num != 0)
-            ConnMuxRelay.SuperSetInternalMux2NumStatus = gpio->GetMuxContactorState(ConnMuxRelay. SuperSetInternalMux2Num);
+            ConnMuxRelay.SuperSetInternalMux2NumStatus = gpio->GetMuxContactorState(ConnMuxRelay.SuperSetInternalMux2Num);
         else
             ConnMuxRelay.SuperSetInternalMux2NumStatus = GpioModule::GpioStatus::INVALID;
         if (ConnMuxRelay.StackMux1Num != 0)
@@ -185,15 +185,15 @@ namespace PowerMuxModule
 
     bool PowerMuxController::StartPowerModule(uint8_t PmId)
     {
-        while((pmc->moduleStatus[PmId].state != PowerModule::ChargingModuleState::NORMAL_OFF) &&
-              pmc->moduleStatus[PmId].isAlive &&
-              pmc->moduleStatus[PmId].isActive)
+        while ((pmc->moduleStatus[PmId].state != PowerModule::ChargingModuleState::NORMAL_OFF) &&
+               pmc->moduleStatus[PmId].isAlive &&
+               pmc->moduleStatus[PmId].isActive)
         {
             // TODO : Assign to list if stored elsewhere
             pmc->ModuleStart(pmc->moduleStatus[PmId].moduleAddress, 0.0f, 0.0f);
             vTaskDelay(pdMS_TO_TICKS(100));
         }
-        if(pmc->moduleStatus[PmId].state == PowerModule::ChargingModuleState::ON)
+        if (pmc->moduleStatus[PmId].state == PowerModule::ChargingModuleState::ON)
         {
             return true;
         }
@@ -217,18 +217,36 @@ namespace PowerMuxModule
         return true;
     }
 
+    bool PowerMuxController::RelayOn(uint16_t relayId)
+    {
+        uint8_t i = 0;
+        while (gpio->GetRelayState(relayId) == GpioModule::GpioStatus::ON)
+        {
+            gpio->RelayOn(relayId);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            i++;
+            if (i > 10)
+            {
+                ESP_LOGE(TAG, "Failed to Stop Relay %hu", relayId);
+                return false;
+            }
+        }
+        return true;
+    }
+
     bool PowerMuxController::isolateConnectorAndAssignDefaultPowerModule(uint8_t connId)
     {
-        if(isolateConnector(static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT), connId))
+        if (isolateConnector(static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT), connId))
         {
-            //assignDefaultPowerModules(static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT), connId);
-            //TODO : Add separate Assign function as above
+            // assignDefaultPowerModules(static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT), connId);
+            // TODO : Add separate Assign function as above
+            // TODO : >>BUG : not isolated Powermodules  >>CHECK: are pms isolated in isolateConnector fn ?
             bool OddNumberConnector = (connId % 2) ? true : false;
             uint8_t pm[2];
-            if(OddNumberConnector)
+            if (OddNumberConnector)
             {
                 pm[0] = (connId - 1) * 4;
-                pm[1] = (connId - 1) * 4 + 1;               
+                pm[1] = (connId - 1) * 4 + 1;
             }
             else
             {
@@ -236,7 +254,7 @@ namespace PowerMuxModule
                 pm[1] = (connId - 1) * 4 - 1;
             }
 
-            bool pmStartResult[2] = { StartPowerModule(pm[0]), StartPowerModule(pm[1]) };
+            bool pmStartResult[2] = {StartPowerModule(pm[0]), StartPowerModule(pm[1])};
             return pmStartResult[0] || pmStartResult[1]; // TODO : return true if any of the power modules started successfully
         }
         return false;
@@ -260,63 +278,63 @@ namespace PowerMuxModule
         PowerModuleConnections PmConnections;
         PowerModule::ModuleStatus PmStatus = GetDefaultPowerModule(connId, &PmConnections);
 
-        if(ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::WELD ||
-           ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::WELD ||
-           ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::WELD ||
-           ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::WELD ||
-           ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::WELD)
+        if (ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::WELD ||
+            ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::WELD ||
+            ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::WELD ||
+            ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::WELD ||
+            ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::WELD)
         {
             ESP_LOGE(TAG, "Connector %hu is in WELD state. Manual Intervention Required.", connId);
             return false;
         }
 
-        while(!IsConnectorIsolated(connId))
+        while (!IsConnectorIsolated(connId))
         {
-            //stand alone : No Muxes. Only 2 connectors
-            if(ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::INVALID ||
-            ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::INVALID ||
-            ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::INVALID ||
-            ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::INVALID)
+            // stand alone : No Muxes. Only 2 connectors
+            if (ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::INVALID ||
+                ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::INVALID ||
+                ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::INVALID ||
+                ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::INVALID)
             {
-                if(ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON)
+                if (ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON)
                 {
-                    if(StopPowerModule(PmConnections.PmId)) // TODO: Add time in stop power module if needed
-                        if(RelayOff(ConnMuxRelay.RelayNum))
+                    if (StopPowerModule(PmConnections.PmId)) // TODO: Add time in stop power module if needed
+                        if (RelayOff(ConnMuxRelay.RelayNum))
                             return true;
                 }
-                else if(ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::OFF)
+                else if (ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::OFF)
                 {
                     return true;
                 }
             }
         }
 
-        while(!IsConnectorIsolated(connId))
+        while (!IsConnectorIsolated(connId))
         {
-            ESP_LOGI(TAG, "Isolating Connector %hu", connId); 
+            ESP_LOGI(TAG, "Isolating Connector %hu", connId);
             uint8_t activeConnections = 0;
-            if(ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON)
+            if (ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON)
                 activeConnections++;
-            if(ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::ON || 
+            if (ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::ON ||
                 ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::ON)
                 activeConnections++;
-            if(ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::ON || 
+            if (ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::ON ||
                 ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::ON)
                 activeConnections++;
 
-            if(activeConnections == 1)
+            if (activeConnections == 1)
             {
                 // Last connection to the connector. Just turn off the relay or mux and it will be isolated
-                if(ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON)
+                if (ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON)
                 {
-                    if(StopPowerModule(PmConnections.PmId)) // TODO: Add time in stop power module if needed
-                        if(RelayOff(ConnMuxRelay.RelayNum))
+                    if (StopPowerModule(PmConnections.PmId)) // TODO: Add time in stop power module if needed
+                        if (RelayOff(ConnMuxRelay.RelayNum))
                             return true;
                 }
-                else if(ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::ON)
+                else if (ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::ON)
                 {
-                    if(StopPowerModule(PmConnections.PmId))
-                        if(RelayOff(ConnMuxRelay.SuperSetInternalMux1Num))
+                    if (StopPowerModule(PmConnections.PmId))
+                        if (RelayOff(ConnMuxRelay.SuperSetInternalMux1Num))
                             return true;
                 }
                 else if (ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::ON)
@@ -337,19 +355,18 @@ namespace PowerMuxModule
                         if (RelayOff(ConnMuxRelay.StackMux2Num))
                             return true;
                 }
-                
             }
             else if (activeConnections == 2)
             {
-                //TODO : Later (Not for standlone)
+                // TODO : Later (Not for standlone)
             }
-            else if(activeConnections == 3)
+            else if (activeConnections == 3)
             {
-                //TODO : Later (Not for standlone)
+                // TODO : Later (Not for standlone)
             }
-            else if(activeConnections > 3)
+            else if (activeConnections > 3)
             {
-                //TODO : not happening now . remove if not used later
+                // TODO : not happening now . remove if not used later
                 ESP_LOGE(TAG, "Connector %hu has more than 3 active connections. Manual Intervention Required.", connId);
                 return false;
             }
@@ -359,7 +376,7 @@ namespace PowerMuxModule
                 return true;
             }
         }
-       
+
         while (((ConnMuxRelay.RelayNumStatus != GpioModule::GpioStatus::OFF) || (ConnMuxRelay.RelayNumStatus != GpioModule::GpioStatus::INVALID)) &&
                ((ConnMuxRelay.StackMux1NumStatus != GpioModule::GpioStatus::OFF) || (ConnMuxRelay.StackMux1NumStatus != GpioModule::GpioStatus::INVALID)) &&
                ((ConnMuxRelay.StackMux2NumStatus != GpioModule::GpioStatus::OFF) || (ConnMuxRelay.StackMux2NumStatus != GpioModule::GpioStatus::INVALID)) &&
@@ -472,10 +489,10 @@ namespace PowerMuxModule
 
     void PowerMuxController::AssignExtraPowerModules(uint8_t connId)
     {
-        //TODO : Implementing only for 2 connectors for now. Add logic for other connectors if needed in future
+        // TODO : Implementing only for 2 connectors for now. Add logic for other connectors if needed in future
         bool OddNumberConnector = (connId % 2) ? true : false;
         bool SufficientPower = true;
-        if(! SufficientPower)
+        if (!SufficientPower)
         {
             ConnectorMuxesRelays ConnMuxRelay = GetConnectorMuxesRelays(connId);
 
@@ -483,22 +500,22 @@ namespace PowerMuxModule
             uint8_t nextPmRelay = (OddNumberConnector) ? (defaultPmRelay + 1) : (defaultPmRelay - 1);
             uint8_t nextnextPmrelay = (OddNumberConnector) ? (defaultPmRelay + 2) : (defaultPmRelay - 2);
 
-            uint8_t relays[3] = { defaultPmRelay, nextPmRelay, nextnextPmrelay };
+            uint8_t relays[3] = {defaultPmRelay, nextPmRelay, nextnextPmrelay};
 
-            for(uint8_t i = 0; i < 3; i++)
+            for (uint8_t i = 0; i < 3; i++)
             {
-                if(gpio->GetRelayState(relays[i]) == GpioModule::GpioStatus::OFF)
+                if (gpio->GetRelayState(relays[i]) == GpioModule::GpioStatus::OFF)
                 {
                     uint8_t pmId[2];
-                    if(GetConnectorRelayPMs(connId,relays[i], pmId))
+                    if (GetConnectorRelayPMs(connId, relays[i], pmId))
                     {
                         pmc->moduleStatus[pmId[0]].state = PowerModule::ChargingModuleState::NORMAL_OFF;
-                        if(IsPowerModuleIsolated(pmId[0]))
+                        if (IsPowerModuleIsolated(pmId[0]))
                         {
                             gpio->RelayOn(relays[i]);
                             StartPowerModule(pmId[0]);
                             StartPowerModule(pmId[1]);
-                        } 
+                        }
                         else
                         {
                             return;
@@ -514,9 +531,7 @@ namespace PowerMuxModule
                     continue;
                 }
             }
-            
         }
-
     }
 
     void PowerMuxController::PowerMuxControllerTask(void *pvParameters)
@@ -526,10 +541,17 @@ namespace PowerMuxModule
         {
             for (uint8_t connId = 1; connId <= NUM_OF_CONNECTORS; connId++)
             {
-                if (((PowerMux->moduleStatus[connId].stateMachineState == PLCModule::StateMachineState::Charge) ||
-                     (PowerMux->moduleStatus[connId].stateMachineState == PLCModule::StateMachineState::PreCharge)) &&
-                    (gpio->GetConnectorContactorState(connId) == GpioModule::GpioStatus::ON))
+                if (PowerMux->moduleStatus[connId].stateMachineState == PLCModule::StateMachineState::Authentication)
                 {
+                    pmm->IsolateDefaultPowerModules(connId);
+                }
+
+                else if (((PowerMux->moduleStatus[connId].stateMachineState == PLCModule::StateMachineState::Charge) ||
+                          (PowerMux->moduleStatus[connId].stateMachineState == PLCModule::StateMachineState::PreCharge)) &&
+                         (gpio->GetConnectorContactorState(connId) == GpioModule::GpioStatus::ON))
+                {
+                    pmm->AssignDefaultPowerModules(connId); // check
+
                     uint8_t NumOfPowerModuleAssigned = 0;
                     for (uint16_t pm = 1; pm <= PowerModule::Constants::MAX_MODULES; pm++)
                     {
@@ -565,9 +587,9 @@ namespace PowerMuxModule
                             }
                         }
                     }
-                    
+
                     connectorPowerModules[connId].EVSEPower = PowerMux->moduleStatus[connId].EVSEPresentCurrent * PowerMux->moduleStatus[connId].EVSEPresentVoltage;
-                    connectorPowerModules[connId].EVPower   = PowerMux->moduleStatus[connId].EVTargetCurrent * PowerMux->moduleStatus[connId].EVTargetVoltage;
+                    connectorPowerModules[connId].EVPower = PowerMux->moduleStatus[connId].EVTargetCurrent * PowerMux->moduleStatus[connId].EVTargetVoltage;
                 }
             }
             pmc->ModuleTimingCommand();
@@ -586,40 +608,40 @@ namespace PowerMuxModule
         memcpy(gpio->SuperSetMux, config->SuperSetMux, sizeof(SuperSetMux));
         memcpy(gpio->StackMux, config->StackMux, sizeof(StackMux));
 
-        for(uint8_t i = 0; i < NUM_OF_POWER_MODULES ; i++)
+        for (uint8_t i = 0; i < NUM_OF_POWER_MODULES; i++)
         {
             uint8_t subsetId = i / 8;
-            uint8_t pmPairOffset = ( i % 8 ) / 2;
+            uint8_t pmPairOffset = (i % 8) / 2;
             uint16_t relays[2] = {0};
             uint16_t relayBase = static_cast<uint16_t>(GpioModule::Contactor::SubSet_RelayBase);
             uint8_t contactor = static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT);
 
-            switch(pmPairOffset)
+            switch (pmPairOffset)
             {
-                case 0:
-                    relays[0] = relayBase;
-                    relays[1] = relayBase + (subsetId * 3) + 1 ;
-                    contactor = (subsetId * 2) + 1 ;
-                    break;
-                case 1:
-                    relays[0] = relayBase + (subsetId * 3) + 1 ;
-                    relays[1] = relayBase + (subsetId * 3) + 2 ;
-                    break;
-                case 2:
-                    relays[0] = relayBase + (subsetId * 3) + 2 ;
-                    relays[1] = relayBase + (subsetId * 3) + 3 ;
-                    break;
-                case 3:
-                    relays[0] = relayBase + (subsetId * 3) + 3 ;
-                    relays[1] = relayBase ;
-                    contactor = (subsetId * 2) + 2;
-                    break;
+            case 0:
+                relays[0] = relayBase;
+                relays[1] = relayBase + (subsetId * 3) + 1;
+                contactor = (subsetId * 2) + 1;
+                break;
+            case 1:
+                relays[0] = relayBase + (subsetId * 3) + 1;
+                relays[1] = relayBase + (subsetId * 3) + 2;
+                break;
+            case 2:
+                relays[0] = relayBase + (subsetId * 3) + 2;
+                relays[1] = relayBase + (subsetId * 3) + 3;
+                break;
+            case 3:
+                relays[0] = relayBase + (subsetId * 3) + 3;
+                relays[1] = relayBase;
+                contactor = (subsetId * 2) + 2;
+                break;
             }
 
             auto &pm = powerModuleConnections[i];
 
             pm.PmId = i; // TODO : change to pmAddress or pmStruct if needed
-            pm.subSetNum = subsetId; 
+            pm.subSetNum = subsetId;
             pm.leftRelayNum = relays[0];
             pm.rightRelayNum = relays[1];
             pm.subSetAcContactorNum = contactor;
@@ -723,22 +745,37 @@ namespace PowerMuxModule
 
     bool PowerMuxController::IsConnectorIsolated(uint8_t connId)
     {
+        if (gpio->GetConnectorContactorState(connId) == GpioModule::GpioStatus::ON || gpio->GetConnectorContactorState(connId) == GpioModule::GpioStatus::WELD)
+        {
+            return false;
+        }
+
         ConnectorMuxesRelays ConnMuxRelay = GetConnectorMuxesRelays(connId);
 
-        //TODO : Recheck 
-        //Logic 2 : Status != GpioModule::GpioStatus::OFF
+        // TODO : Recheck
+        // Logic 2 : Status != GpioModule::GpioStatus::OFF
 
-        if(ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::WELD) return false;
-        if(ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::WELD) return false;
-        if(ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::WELD) return false;
-        if(ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::WELD) return false;
-        if(ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::WELD) return false;
+        if (ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::WELD)
+            return false;
+        if (ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::WELD)
+            return false;
+        if (ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::WELD)
+            return false;
+        if (ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::WELD)
+            return false;
+        if (ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::WELD)
+            return false;
 
-        if(ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON) return false;
-        if(ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::ON) return false;
-        if(ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::ON) return false;
-        if(ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::ON) return false;
-        if(ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::ON) return false;
+        if (ConnMuxRelay.RelayNumStatus == GpioModule::GpioStatus::ON)
+            return false;
+        if (ConnMuxRelay.SuperSetInternalMux1NumStatus == GpioModule::GpioStatus::ON)
+            return false;
+        if (ConnMuxRelay.SuperSetInternalMux2NumStatus == GpioModule::GpioStatus::ON)
+            return false;
+        if (ConnMuxRelay.StackMux1NumStatus == GpioModule::GpioStatus::ON)
+            return false;
+        if (ConnMuxRelay.StackMux2NumStatus == GpioModule::GpioStatus::ON)
+            return false;
 
         return true; // isolated
     }
@@ -746,29 +783,28 @@ namespace PowerMuxModule
     bool PowerMuxController::IsPowerModuleIsolated(uint8_t pmId)
     {
         const PowerModuleConnections &pm = powerModuleConnections[pmId];
-        
-        if(pm.subSetAcContactorNum == static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT))
+
+        if (pm.subSetAcContactorNum == static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT))
         {
             // Power Modules with two relays
             bool leftRelayIsoStatus = (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON) || (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::WELD);
             bool rightRelayIsoStatus = (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON) || (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::WELD);
 
-            if(leftRelayIsoStatus || rightRelayIsoStatus)
+            if (leftRelayIsoStatus || rightRelayIsoStatus)
                 return false;
         }
         else
         {
-            // Power Modules directly connected to contactor (only 1 relay)            
-            bool contactorIsoStatus = 
-                (gpio->GetAcContactorState(pm.subSetAcContactorNum) == GpioModule::GpioStatus::ON) || (gpio->GetAcContactorState(pm.subSetAcContactorNum) == GpioModule::GpioStatus::WELD);  //TODO : use supersetMux and stackMux for not standalones
+            // Power Modules directly connected to contactor (only 1 relay)
+            bool contactorIsoStatus =
+                (gpio->GetAcContactorState(pm.subSetAcContactorNum) == GpioModule::GpioStatus::ON) || (gpio->GetAcContactorState(pm.subSetAcContactorNum) == GpioModule::GpioStatus::WELD); // TODO : use supersetMux and stackMux for not standalones
 
-            bool relayIsoStatus = (pm.leftRelayNum == (int)GpioModule::Contactor::SubSet_RelayBase)  
-                            ? (gpio->GetRelayState(pm.rightRelayNum) == GpioModule::GpioStatus::ON ) || (gpio->GetRelayState(pm.rightRelayNum) == GpioModule::GpioStatus::WELD ) 
-                            : (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON ) || (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::WELD );
+            bool relayIsoStatus = (pm.leftRelayNum == (int)GpioModule::Contactor::SubSet_RelayBase)
+                                      ? (gpio->GetRelayState(pm.rightRelayNum) == GpioModule::GpioStatus::ON) || (gpio->GetRelayState(pm.rightRelayNum) == GpioModule::GpioStatus::WELD)
+                                      : (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON) || (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::WELD);
 
-            if(contactorIsoStatus || relayIsoStatus)
+            if (contactorIsoStatus || relayIsoStatus)
                 return false;
-
         }
 
         return true;
@@ -777,32 +813,32 @@ namespace PowerMuxModule
     bool PowerMuxController::IsPowerModuleLastConnection(uint8_t pmId)
     {
         const PowerModuleConnections &pm = powerModuleConnections[pmId];
-        
-        if(pm.subSetAcContactorNum == static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT))
+
+        if (pm.subSetAcContactorNum == static_cast<uint8_t>(PowerModule::ConnectorType::DEFAULT))
         {
             // Power Modules with two relays
             bool leftRelayIsoStatus = (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON);
             bool rightRelayIsoStatus = (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON);
 
-            if(leftRelayIsoStatus ^ rightRelayIsoStatus)
+            if (leftRelayIsoStatus ^ rightRelayIsoStatus)
                 return true;
         }
         else
         {
-            // Power Modules directly connected to contactor (only 1 relay)            
-            bool contactorIsoStatus_ = 
-                (gpio->GetAcContactorState(pm.subSetAcContactorNum) == GpioModule::GpioStatus::ON) ;  
+            // Power Modules directly connected to contactor (only 1 relay)
+            bool contactorIsoStatus_ =
+                (gpio->GetAcContactorState(pm.subSetAcContactorNum) == GpioModule::GpioStatus::ON);
 
-            bool contactorIsoStatus = 
+            bool contactorIsoStatus =
                 (pmm->moduleStatus[pm.subSetAcContactorNum].stateMachineState >= PLCModule::StateMachineState::Isolation &&
-                pmm->moduleStatus[pm.subSetAcContactorNum].stateMachineState <= PLCModule::StateMachineState::StopCharge);
-            //TODO : Also supersetMux and stackMux for not standalones
+                 pmm->moduleStatus[pm.subSetAcContactorNum].stateMachineState <= PLCModule::StateMachineState::StopCharge);
+            // TODO : Also supersetMux and stackMux for not standalones
 
             bool relayIsoStatus = (pm.leftRelayNum == (int)GpioModule::Contactor::SubSet_RelayBase)
-                            ? (gpio->GetRelayState(pm.rightRelayNum) == GpioModule::GpioStatus::ON ) 
-                            : (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON );
+                                      ? (gpio->GetRelayState(pm.rightRelayNum) == GpioModule::GpioStatus::ON)
+                                      : (gpio->GetRelayState(pm.leftRelayNum) == GpioModule::GpioStatus::ON);
 
-            if(contactorIsoStatus ^ relayIsoStatus)
+            if (contactorIsoStatus ^ relayIsoStatus)
                 return true;
         }
 
@@ -811,54 +847,55 @@ namespace PowerMuxModule
 
     bool PowerMuxController::GetConnectorRelayPMs(uint8_t connId, uint16_t relayId, uint8_t pmId[2])
     {
-        //Fn that gives PMs that can be connected via given relay to connector
-        //Note : Connecter and Relay Should be from same subset
+        // Fn that gives PMs that can be connected via given relay to connector
+        // Note : Connecter and Relay Should be from same subset
 
         uint8_t ConnectorSubSet = (connId - 1) / 2;
-        uint8_t PmSubset = ((relayId - (int)GpioModule::Contactor::SubSet_RelayBase) - 1 ) / 3;
-        if (ConnectorSubSet != PmSubset ) 
+        uint8_t PmSubset = ((relayId - (int)GpioModule::Contactor::SubSet_RelayBase) - 1) / 3;
+        if (ConnectorSubSet != PmSubset)
             return false;
 
         bool OddNumberConnector = (connId % 2) ? true : false;
-        uint8_t RelayOffset = ((relayId - (int)GpioModule::Contactor::SubSet_RelayBase) % 3) + 1 ;
+        uint8_t RelayOffset = ((relayId - (int)GpioModule::Contactor::SubSet_RelayBase) % 3) + 1;
 
-        if(OddNumberConnector)
+        if (OddNumberConnector)
         {
-            pmId[0] = PmSubset * 8 + RelayOffset * 2 ;
-            pmId[1] = pmId[0] + 1 ;
+            pmId[0] = PmSubset * 8 + RelayOffset * 2;
+            pmId[1] = pmId[0] + 1;
         }
         else
         {
-            pmId[0] = PmSubset * 8 + RelayOffset *2 - 2;
-            pmId[1] = pmId[0] + 1 ;
+            pmId[0] = PmSubset * 8 + RelayOffset * 2 - 2;
+            pmId[1] = pmId[0] + 1;
         }
         return true;
     }
 
     void PowerMuxController::UpdateConnectorPowerModules()
     {
-        //TODO : pass snapshot of pmc status if needed instead of accessing directly in loop(if better)
-        for (uint8_t i = 0; i <= NUM_OF_CONNECTORS; i++) {
+        // TODO : pass snapshot of pmc status if needed instead of accessing directly in loop(if better)
+        for (uint8_t i = 0; i <= NUM_OF_CONNECTORS; i++)
+        {
             connectorPowerModules[i].PmCount = 0;
         }
-        
-        for(uint8_t i = 0; i< NUM_OF_POWER_MODULES; i++)
-        { 
-            const auto& m = pmc->moduleStatus[i];
 
-            if(m.Connector == PowerModule::ConnectorType::DEFAULT)
+        for (uint8_t i = 0; i < NUM_OF_POWER_MODULES; i++)
+        {
+            const auto &m = pmc->moduleStatus[i];
+
+            if (m.Connector == PowerModule::ConnectorType::DEFAULT)
                 continue;
-            
+
             uint8_t connId = static_cast<uint8_t>(m.Connector);
-            if(connectorPowerModules[connId].PmCount < MAX_PM_PER_CONNECTOR)
+            if (connectorPowerModules[connId].PmCount < MAX_PM_PER_CONNECTOR)
             {
                 connectorPowerModules[connId].PmId[connectorPowerModules[connId].PmCount] = i;
                 connectorPowerModules[connId].PmCount++;
             }
             else
             {
-                //TODO : LOG if needed
-            }            
+                // TODO : LOG if needed
+            }
         }
     }
 
@@ -872,44 +909,44 @@ namespace PowerMuxModule
 
     void PowerMuxController::optimizePowerModules()
     {
-        //Only relay based optimization
-        for(uint8_t pmId = 0; pmId < NUM_OF_POWER_MODULES; pmId = pmId + 2 )
+        // Only relay based optimization
+        for (uint8_t pmId = 0; pmId < NUM_OF_POWER_MODULES; pmId = pmId + 2)
         {
-            //Only for middel modules
-            if((pmId % 8) / 2 == 0 || (pmId % 8) / 2 == 3)
+            // Only for middel modules
+            if ((pmId % 8) / 2 == 0 || (pmId % 8) / 2 == 3)
             {
-               if(pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::NORMAL_OFF &&
-               pmc->moduleStatus[pmId+1].state == PowerModule::ChargingModuleState::NORMAL_OFF)
-               {
-                    uint8_t connectorRgt = static_cast<uint8_t>(pmc->moduleStatus[pmId+2].Connector);
-               }
+                if (pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::NORMAL_OFF &&
+                    pmc->moduleStatus[pmId + 1].state == PowerModule::ChargingModuleState::NORMAL_OFF)
+                {
+                    uint8_t connectorRgt = static_cast<uint8_t>(pmc->moduleStatus[pmId + 2].Connector);
+                }
             }
 
-            if(pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::NORMAL_OFF &&
-               pmc->moduleStatus[pmId+1].state == PowerModule::ChargingModuleState::NORMAL_OFF)
+            if (pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::NORMAL_OFF &&
+                pmc->moduleStatus[pmId + 1].state == PowerModule::ChargingModuleState::NORMAL_OFF)
             {
-                uint8_t connectorLft = static_cast<uint8_t>(pmc->moduleStatus[pmId-2].Connector);
-                uint8_t connectorRgt = static_cast<uint8_t>(pmc->moduleStatus[pmId+2].Connector);
-                if(PriorityConnector(connectorLft, connectorRgt) == connectorLft)
+                uint8_t connectorLft = static_cast<uint8_t>(pmc->moduleStatus[pmId - 2].Connector);
+                uint8_t connectorRgt = static_cast<uint8_t>(pmc->moduleStatus[pmId + 2].Connector);
+                if (PriorityConnector(connectorLft, connectorRgt) == connectorLft)
                 {
                     // make sure relay is on for left connector and off for right connector
                     // if not already in that state
                     ConnectorMuxesRelays ConnMuxRelay = GetConnectorMuxesRelays(connectorLft);
-                    if(ConnMuxRelay.RelayNumStatus != GpioModule::GpioStatus::ON)
+                    if (ConnMuxRelay.RelayNumStatus != GpioModule::GpioStatus::ON)
                     {
                         gpio->RelayOn(ConnMuxRelay.RelayNum);
                         StartPowerModule(pmId);
-                        StartPowerModule(pmId+1);
+                        StartPowerModule(pmId + 1);
                     }
                 }
                 else
                 {
                     ConnectorMuxesRelays ConnMuxRelay = GetConnectorMuxesRelays(connectorRgt);
-                    if(ConnMuxRelay.RelayNumStatus != GpioModule::GpioStatus::ON)
+                    if (ConnMuxRelay.RelayNumStatus != GpioModule::GpioStatus::ON)
                     {
                         gpio->RelayOn(ConnMuxRelay.RelayNum);
                         StartPowerModule(pmId);
-                        StartPowerModule(pmId+1);
+                        StartPowerModule(pmId + 1);
                     }
                 }
             }
@@ -922,53 +959,52 @@ namespace PowerMuxModule
 
     uint8_t PowerMuxController::PriorityConnector(uint8_t ConnId1, uint8_t ConnId2)
     {
-        if(connectorPowerModules[ConnId1].StartTime <= connectorPowerModules[ConnId2].StartTime)
+        if (connectorPowerModules[ConnId1].StartTime <= connectorPowerModules[ConnId2].StartTime)
             return ConnId1;
         else
             return ConnId2;
     }
 
-    bool PowerMuxController::AddPowerModulesToConnector(uint8_t connId) //TODO: used to add power modules after default addition.
+    bool PowerMuxController::AddPowerModulesToConnector(uint8_t connId) // TODO: used to add power modules after default addition.
     {
-        //TODO : CHECK IF NEEDED AT ALL. OPTIMISE WILL HANDLE THIS ALREADY PERIODICALYY
-        //IF NEEDED TO ADD INTENTIONALLY : ADD or INCREASE PREFERENCE
+        // TODO : CHECK IF NEEDED AT ALL. OPTIMISE WILL HANDLE THIS ALREADY PERIODICALYY
+        // IF NEEDED TO ADD INTENTIONALLY : ADD or INCREASE PREFERENCE
 
         // if(PowerMuxController::sufficientPower(connId))
-        for(int i = 0;i < MAX_NUM_OF_POWER_MODULES; i++)
+        for (int i = 0; i < MAX_NUM_OF_POWER_MODULES; i++)
         {
-
         }
         return false;
     }
 
     bool PowerMuxController::RemovePowerModulesFromConnector(uint8_t connId)
-    {   
-        for(uint8_t i=0; i<connectorPowerModules[connId].PmCount;i++)
+    {
+        for (uint8_t i = 0; i < connectorPowerModules[connId].PmCount; i++)
         {
             uint8_t pmId = (connectorPowerModules[connId].PmId[i]);
-            if(IsPowerModuleLastConnection(pmId))
+            if (IsPowerModuleLastConnection(pmId))
             {
-                //remove  the last connection
-                //1. connector, pm same subset - switch off relays (only case in standalone)
-                //2. connector, pm same superset, but differnet subsets - swith off superset muxes
-                //3. connector, pm diff superset - sswitch off stackmux
-                //ONLY ELSE BLOCk changes above cases 
-                if(powerModuleConnections[pmId].leftRelayNum != static_cast<uint16_t>(GpioModule::Contactor::SubSet_RelayBase))
+                // remove  the last connection
+                // 1. connector, pm same subset - switch off relays (only case in standalone)
+                // 2. connector, pm same superset, but differnet subsets - swith off superset muxes
+                // 3. connector, pm diff superset - sswitch off stackmux
+                // ONLY ELSE BLOCk changes above cases
+                if (powerModuleConnections[pmId].leftRelayNum != static_cast<uint16_t>(GpioModule::Contactor::SubSet_RelayBase))
                 {
-                    //switch off powermodule -> if(succeed) switch off relay
-                    if(pmc->ModuleStop(pmc->moduleStatus[pmId].moduleAddress, 0.0f, 0.0f))
+                    // switch off powermodule -> if(succeed) switch off relay
+                    if (pmc->ModuleStop(pmc->moduleStatus[pmId].moduleAddress, 0.0f, 0.0f))
                         RelayOff(powerModuleConnections[pmId].leftRelayNum);
                 }
-                else if(powerModuleConnections[pmId].rightRelayNum != static_cast<uint16_t>(GpioModule::Contactor::SubSet_RelayBase))
+                else if (powerModuleConnections[pmId].rightRelayNum != static_cast<uint16_t>(GpioModule::Contactor::SubSet_RelayBase))
                 {
-                    if(pmc->ModuleStop(pmc->moduleStatus[pmId].moduleAddress, 0.0f, 0.0f))
+                    if (pmc->ModuleStop(pmc->moduleStatus[pmId].moduleAddress, 0.0f, 0.0f))
                         RelayOff(powerModuleConnections[pmId].rightRelayNum);
                 }
                 else
                 {
                     // STANDALONE : This means connected to connid - default model - cant remove
                     // OTHERS : Switch off powermodule and switch off muxes
-                }                
+                }
             }
             else
             {
@@ -984,150 +1020,204 @@ namespace PowerMuxModule
         // 1. switch on connector contactor
         // 2. switch on default power modules
 
-        if(gpio->ConnectorContactorOn(connId))
+        if (gpio->GetConnectorContactorState(connId) == GpioModule::GpioStatus::ON)
         {
-            uint8_t pm[2] = { (connId == 1) ? 0 : 6, (connId == 1) ? 1 : 7 };
-            bool pmStartResult[2] = { StartPowerModule(pm[0]), StartPowerModule(pm[1]) };
-            return pmStartResult[0] || pmStartResult[1];
+            uint8_t pm[2] = {(connId == 1) ? uint8_t{0} : uint8_t{6}, (connId == 1) ? uint8_t{1} : uint8_t{7}};
+            StartPowerModule(pm[0]);
+            StartPowerModule(pm[1]);
+
+            pmc->moduleStatus[pm[0]].Connector = static_cast<PowerModule::ConnectorType>(connId);
+            pmc->moduleStatus[pm[1]].Connector = static_cast<PowerModule::ConnectorType>(connId);
+
+            return ((pmc->moduleStatus[pm[0]].isActive == true) ||
+                    (pmc->moduleStatus[pm[1]].isActive = true));
         }
-        
+        else
+        {
+            return false;
+        }
     }
 
-    uint8_t PowerMuxController::GetMergerId(uint8_t pmId,uint8_t connId)
+    bool PowerMuxController::IsolatePowerModules(uint8_t pmId)
     {
-        if(connId == 0) return 0;
+        // TODO : Change to IsolateDefaultPowerModules if needed
+        // TODO : return true if pm 0ff && contactor off && lftrelay off && rgt relay off
 
-        switch(pmId % 8)
+        uint8_t pmPair[2] = {
+            static_cast<uint8_t>((pmId % 2 == 0) ? pmId : pmId - 1),
+            static_cast<uint8_t>((pmId % 2 == 0) ? pmId + 1 : pmId)};
+
+        if (pmc->moduleStatus[pmPair[0]].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[pmPair[1]].state == PowerModule::ChargingModuleState::ON)
         {
-            case 0:
-            case 1:
-                return (connId == 1) ? 0 : 1;
-            case 2:
-            case 3:
-                return (connId == 1) ? 1 : 2;
-            case 4:
-            case 5:
-                return (connId == 1) ? 2 : 3;
-            case 6:
-            case 7:
-                return (connId == 1) ? 3 : 0;
-            default:
-                return 0; // Invalid PM ID and returns invalid Merger ID
+            StopPowerModule(pmPair[0]);
+            StopPowerModule(pmPair[1]);
+
+            if (pmc->moduleStatus[pmPair[0]].state == PowerModule::ChargingModuleState::NORMAL_OFF && pmc->moduleStatus[pmPair[1]].state == PowerModule::ChargingModuleState::NORMAL_OFF)
+            {
+                uint16_t contactor;
+                uint16_t lftRelay;
+                uint16_t rgtRelay;
+
+                GetConnections(pmId, contactor, lftRelay, rgtRelay);
+                if (contactor != 0)
+                    gpio->ConnectorContactorOff(contactor);
+                if (lftRelay != 300)
+                    gpio->RelayOff(lftRelay);
+                if (rgtRelay != 300)
+                    gpio->RelayOff(rgtRelay);
+            }
+        }
+        return true;
+    }
+
+    bool PowerMuxController::IsolateDefaultPowerModules(uint8_t connId)
+    {
+        uint8_t defaultPM[2] = {(connId == 1) ? uint8_t{0} : uint8_t{6}, (connId == 1) ? uint8_t{1} : uint8_t{7}};
+        uint16_t merger = (connId == 1) ? uint16_t{301} : uint16_t{303};
+
+        if (pmc->moduleStatus[defaultPM[0]].state == PowerModule::ChargingModuleState::NORMAL_OFF && // TODO: One of them can be Fault_OFF.
+            pmc->moduleStatus[defaultPM[1]].state == PowerModule::ChargingModuleState::NORMAL_OFF &&
+            gpio->GetRelayState(merger) == GpioModule::GpioStatus::OFF)
+        {
+            return true;
+        }
+
+        StopPowerModule(defaultPM[0]);
+        StopPowerModule(defaultPM[1]);
+
+        RelayOff(merger); // TODO: Add::check both pms are off before this
+
+        return pmc->moduleStatus[defaultPM[0]].state == PowerModule::ChargingModuleState::NORMAL_OFF &&
+               pmc->moduleStatus[defaultPM[1]].state == PowerModule::ChargingModuleState::NORMAL_OFF &&
+               gpio->GetRelayState(merger) == GpioModule::GpioStatus::OFF;
+    }
+
+    uint16_t PowerMuxController::GetMergerId(uint8_t pmId, uint8_t connId) // TOD: check if needed
+    {
+        if (connId == 0)
+            return 0;
+
+        uint16_t mergerBase = static_cast<uint16_t>(GpioModule::Contactor::SubSet_RelayBase);
+        uint16_t megerOffset = 0;
+
+        switch (pmId % 8)
+        {
+        case 0:
+        case 1:
+            megerOffset = (connId == 1) ? 0 : 1;
+        case 2:
+        case 3:
+            megerOffset = (connId == 1) ? 1 : 2;
+        case 4:
+        case 5:
+            megerOffset = (connId == 1) ? 2 : 3;
+        case 6:
+        case 7:
+            megerOffset = (connId == 1) ? 3 : 0;
+        }
+        return mergerBase + megerOffset;
+    }
+
+    void PowerMuxController::GetConnections(uint8_t pmId, uint16_t &contactor, uint16_t &leftRelay, uint16_t &rightRelay)
+    {
+        // TODO:  make struct and create as conifg
+        contactor = 0;   // contacor base
+        leftRelay = 300; // relayBase
+        rightRelay = 300;
+
+        switch (pmId % 8)
+        {
+        case 0:
+        case 1:
+            contactor = 1;
+            leftRelay = 300;
+            rightRelay = 301;
+            break;
+        case 2:
+        case 3:
+            contactor = 0;
+            leftRelay = 301;
+            rightRelay = 302;
+            break;
+        case 4:
+        case 5:
+            contactor = 0;
+            leftRelay = 302;
+            rightRelay = 303;
+            break;
+        case 6:
+        case 7:
+            contactor = 2;
+            leftRelay = 303;
+            rightRelay = 300;
+            break;
         }
     }
 
     void PowerMuxController::OptimizePowerModulesForStandAlone()
     {
-        //TODO : decide periodicity and implement timer or counter based mechanism to call optimizePowerModules function
+        // TODO : decide periodicity and implement timer or counter based mechanism to call optimizePowerModules function
 
-        if(gpio->GetConnectorContactorState(1) == GpioModule::GpioStatus::OFF && gpio->GetConnectorContactorState(2) == GpioModule::GpioStatus::OFF)
+        if (gpio->GetConnectorContactorState(1) == GpioModule::GpioStatus::OFF && gpio->GetConnectorContactorState(2) == GpioModule::GpioStatus::OFF)
         {
-             //both connectors are active. no optimization possible
-             return;
+            // both connectors are  NOT active. no optimization possible
+            return;
         }
 
-        if(gpio->GetConnectorContactorState(1) == GpioModule::GpioStatus::ON && gpio->GetConnectorContactorState(2) == GpioModule::GpioStatus::ON)
+        for (uint8_t pmId = 0; pmId < 8; pmId = pmId + 2)
         {
-            // pm 2,3
-            if(pmc->moduleStatus[2].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[3].state == PowerModule::ChargingModuleState::ON)
-            {
-                //Skip
-            }
-            else
-            {
-                if(PriorityConnector(1,2)==1)
-                {
-                    gpio->RelayOn(1);
-                    bool pmStartResult[2] = {StartPowerModule(2),StartPowerModule(3)};                    
-                }
-                else
-                {
-                    if(pmc->moduleStatus[4].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[5].state == PowerModule::ChargingModuleState::ON)
-                    {
-                        gpio->RelayOn(2);
-                        bool pmStartResult[2] = {StartPowerModule(2),StartPowerModule(3)};
-                    }
-                    
-                }
-            }
-
-            // pm 4,5
-            if(pmc->moduleStatus[4].state == PowerModule::ChargingModuleState::NORMAL_OFF && pmc->moduleStatus[5].state == PowerModule::ChargingModuleState::NORMAL_OFF)
-            {
-                //TODO : verify if one is fault off
-                if(PriorityConnector(1,2)==1)
-                {
-                    if(pmc->moduleStatus[2].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[3].state == PowerModule::ChargingModuleState::ON)
-                    {
-                        gpio->RelayOn(2);
-                        bool pmStartResult[2] = {StartPowerModule(4),StartPowerModule(5)};
-                    }                 
-                }
-                else
-                {
-                    gpio->RelayOn(1);
-                    bool pmStartResult[2] = {StartPowerModule(4),StartPowerModule(5)};                    
-                }
-            }
-        }
-
-        for(uint8_t pmId = 0 ; pmId < 8 ; pmId = pmId + 2 )
-        {
-            if(pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[pmId + 1].state == PowerModule::ChargingModuleState::ON) 
+            if (pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[pmId + 1].state == PowerModule::ChargingModuleState::ON)
             {
                 continue; // Already working
             }
 
-            if(pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::FAULT_OFF && pmc->moduleStatus[pmId + 1].state == PowerModule::ChargingModuleState::FAULT_OFF) 
+            if (pmc->moduleStatus[pmId].state == PowerModule::ChargingModuleState::FAULT_OFF && pmc->moduleStatus[pmId + 1].state == PowerModule::ChargingModuleState::FAULT_OFF)
             {
                 continue; // Faulty modules, cant be optimized
             }
 
-            //check if default modules
-            if(pmId == 0 || pmId == 1)
+            // check if default modules
+            if (pmId == 0 || pmId == 1)
             {
-                //check if contactor is on
-                if(gpio->GetConnectorContactorState(1) == GpioModule::GpioStatus::ON)
+                // check if contactor is on
+                if (gpio->GetConnectorContactorState(1) == GpioModule::GpioStatus::ON)
                 {
-                    continue; //TODO : CHECK ONLY : rarely/never comes here. only when contactor on and def powermodules off due to some reason.
+                    continue; // TODO : CHECK ONLY : rarely/never comes here. only when contactor on and def powermodules off due to some reason.
                 }
-                else //TODO : remove this else and make if direct to reduce nesting
+                else // TODO : remove this else and make if direct to reduce nesting
                 {
-                    if(pmc->moduleStatus[2].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[3].state == PowerModule::ChargingModuleState::ON)
+                    if (pmc->moduleStatus[2].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[3].state == PowerModule::ChargingModuleState::ON)
                     {
-                        gpio->RelayOn(1);
-                        bool pmStartResult[2] = {StartPowerModule(0),StartPowerModule(1)};
+                        RelayOn(1);
+                        bool pmStartResult[2] = {StartPowerModule(0), StartPowerModule(1)};
                     }
                 }
             }
-            else if(pmId == 6 || pmId == 7)
+            else if (pmId == 6 || pmId == 7)
             {
-                if(gpio->GetConnectorContactorState(2) == GpioModule::GpioStatus::ON)
+                if (gpio->GetConnectorContactorState(2) == GpioModule::GpioStatus::ON)
                 {
                     continue;
                 }
                 else
                 {
-                    if(pmc->moduleStatus[4].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[5].state == PowerModule::ChargingModuleState::ON)
+                    if (pmc->moduleStatus[4].state == PowerModule::ChargingModuleState::ON || pmc->moduleStatus[5].state == PowerModule::ChargingModuleState::ON)
                     {
-                        gpio->RelayOn(3);
-                        bool pmStartResult[2] = {StartPowerModule(6),StartPowerModule(7)};
+                        RelayOn(3);
+                        bool pmStartResult[2] = {StartPowerModule(6), StartPowerModule(7)};
                     }
                 }
             }
             else
             {
-                uint8_t connector = PriorityConnector((uint8_t)pmc->moduleStatus[pmId-2].Connector , (uint8_t)pmc->moduleStatus[pmId+2].Connector);
+                uint8_t connector = PriorityConnector((uint8_t)pmc->moduleStatus[pmId - 2].Connector, (uint8_t)pmc->moduleStatus[pmId + 2].Connector);
                 uint8_t mergerId = GetMergerId(pmId, connector);
-                //ON mergerId
-                if(gpio->RelayOn(mergerId))
+                // ON mergerId
+                if (RelayOn(mergerId))
                 {
-                    bool pmStartResult[2] = {StartPowerModule(pmId),StartPowerModule(pmId+1)};
+                    bool pmStartResult[2] = {StartPowerModule(pmId), StartPowerModule(pmId + 1)};
                 }
             }
-                
-
-
         }
     }
 

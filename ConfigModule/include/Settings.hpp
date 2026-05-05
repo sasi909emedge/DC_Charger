@@ -1,0 +1,22 @@
+#ifndef INC_CONFIG_H_
+#define INC_CONFIG_H_
+
+#define MAX_NUM_OF_SUBSETS 2
+#define MAX_NUM_OF_SUPERSETS 1
+#define MAX_NUM_OF_CONNECTORS 4
+#define MAX_NUM_OF_POWER_MODULES 16
+
+#define NUM_OF_SUBSETS 1
+#define NUM_OF_SUPERSETS 1
+#define NUM_OF_CONNECTORS 2
+#define NUM_OF_POWER_MODULES 4
+
+#define MODEM_TX_PIN 17
+#define MODEM_RX_PIN 16
+#define ETH_MOSI_PIN 23
+#define ETH_MISO_PIN 19
+#define ETH_SCLK_PIN 18
+#define ETH_CS_PIN 2
+#define ETH_SPI_HOST SPI2_HOST
+
+#endif

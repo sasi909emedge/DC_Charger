@@ -213,14 +213,13 @@ namespace CCSConnector
     void CCSConnectorController::ProcessStateMachineStateIsolation(uint8_t ConnID)
     {
         moduleStatus[ConnID].chargingDuration = 0;
-        gpio->ConnectorContactorOn(ConnID);
         plc->Set_EVSEProcessingCC(ConnID, PLCModule::EVSEProcessing::Finished);
         // Actual IMD will update the isolation status
         plc->Set_EVSEIsolationStatus(ConnID, PLCModule::EVSEIsolationStatus::Valid); // forcing isolation status to valid
     }
     void CCSConnectorController::ProcessStateMachineStatePreCharge(uint8_t ConnID)
     {
-        // gpio->ConnectorContactorOn(ConnID);
+        gpio->ConnectorContactorOn(ConnID);
     }
 
     void CCSConnectorController::ProcessStateMachineStateCharge(uint8_t ConnID)
@@ -406,7 +405,6 @@ namespace CCSConnector
             else
             {
                 moduleStatus[ConnID].isTransactionOngoing = false;
-                writeConnectorModuleStatus(ConnID);
                 timeout[ConnID] = 0;
                 ocpp->CMSStopTransactionResponse[ConnID].Received = false;
                 ocpp->CPStopTransactionRequest[ConnID].Sent = false;
@@ -542,6 +540,11 @@ namespace CCSConnector
                 break;
             }
 
+            connector->moduleStatus[ConnID].DCMeterValues = energy->GetDCEnergyMeterValue(ConnID);
+
+            plc->Set_EVSEPresentCurrent(ConnID, connector->moduleStatus[ConnID].DCMeterValues.current);
+            plc->Set_EVSEPresentVoltage(ConnID, connector->moduleStatus[ConnID].DCMeterValues.voltage);
+
             plc->SendEVSEDateTime(ConnID);
             plc->SendEVSEDCMaxLimits(ConnID);
             plc->SendEVSEDCRegulationLimits(ConnID);
@@ -606,37 +609,37 @@ namespace CCSConnector
                 switch (plc->Get_ProximityPinState(ConnID))
                 {
                 case PLCModule::ProximityPinState::Not_Connected:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Not_Connected", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Not_Connected", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Type2_Connected13A:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Type2_Connected13A", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Type2_Connected13A", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Type2_Connected20A:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Type2_Connected20A", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Type2_Connected20A", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Type2_Connected32A:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Type2_Connected32A", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Type2_Connected32A", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Type2_Connected63A:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Type2_Connected63A", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Type2_Connected63A", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Type2_Connected:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Type2_Connected", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Type2_Connected", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Type1_Connected:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Type1_Connected", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Type1_Connected", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Type1_Connected_Button_Pressed:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Type1_Connected_Button_Pressed", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Type1_Connected_Button_Pressed", ConnID);
                     break;
                 case PLCModule::ProximityPinState::Invalid:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Invalid", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Invalid", ConnID);
                     break;
                 case PLCModule::ProximityPinState::SNA:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: SNA", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: SNA", ConnID);
                     break;
                 default:
-                    ESP_LOGI(TAG, "Connector %hhu: PPState: Unkown", ConnID);
+                    ESP_LOGD(TAG, "Connector %hhu: PPState: Unkown", ConnID);
                     break;
                 }
 

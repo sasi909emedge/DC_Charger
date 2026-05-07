@@ -9,6 +9,107 @@
 #define TAG "Connector"
 #define TAG_STATUS "Status"
 
+static const char *GetControlPilotStateString(PLCModule::ControlPilotState state)
+{
+    switch (state)
+    {
+    case PLCModule::ControlPilotState::A:
+        return "A";
+    case PLCModule::ControlPilotState::B:
+        return "B";
+    case PLCModule::ControlPilotState::C:
+        return "C";
+    case PLCModule::ControlPilotState::D:
+        return "D";
+    case PLCModule::ControlPilotState::E:
+        return "E";
+    case PLCModule::ControlPilotState::F:
+        return "F";
+    case PLCModule::ControlPilotState::SNA:
+        return "SNA";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+static const char *GetStateMachineStateString(PLCModule::StateMachineState state)
+{
+    switch (state)
+    {
+    case PLCModule::StateMachineState::Idle:
+        return "Idle";
+    case PLCModule::StateMachineState::Authentication:
+        return "Authentication";
+    case PLCModule::StateMachineState::Parameter:
+        return "Parameter";
+    case PLCModule::StateMachineState::Isolation:
+        return "Isolation";
+    case PLCModule::StateMachineState::PreCharge:
+        return "PreCharge";
+    case PLCModule::StateMachineState::Charge:
+        return "Charge";
+    case PLCModule::StateMachineState::StopCharge:
+        return "StopCharge";
+    case PLCModule::StateMachineState::Finish:
+        return "Finish";
+    case PLCModule::StateMachineState::Fault:
+        return "Fault";
+    case PLCModule::StateMachineState::SNA:
+        return "SNA";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+static const char *GetControlPilotDutyString(PLCModule::ControlPilotDuty duty)
+{
+    switch (duty)
+    {
+    case PLCModule::ControlPilotDuty::Duty0:
+        return "Duty0";
+    case PLCModule::ControlPilotDuty::Duty100:
+        return "Duty100";
+    case PLCModule::ControlPilotDuty::HLC:
+        return "HLC";
+    case PLCModule::ControlPilotDuty::SNA:
+        return "SNA";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+static const char *GetConnectorModeString(CCSConnector::ConnectorMode mode)
+{
+    switch (mode)
+    {
+    case CCSConnector::ConnectorMode::AC:
+        return "AC";
+    case CCSConnector::ConnectorMode::DC:
+        return "DC";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+static const char *GetStopReasonString(OCPPModule::StopReasons reason)
+{
+    switch (reason)
+    {
+    case OCPPModule::StopReasons::Stop_Remote:
+        return "RemoteStop";
+    case OCPPModule::StopReasons::Stop_EVDisconnected:
+        return "EVDisconnected";
+    case OCPPModule::StopReasons::Stop_EmergencyStop:
+        return "EmergencyStop";
+    case OCPPModule::StopReasons::Stop_PowerLoss:
+        return "PowerLoss";
+    case OCPPModule::StopReasons::Stop_Other:
+        return "Other";
+    default:
+        return "UNKNOWN";
+    }
+}
+
 CCSConnector::CCSConnectorController *connector;
 namespace CCSConnector
 {
@@ -733,16 +834,26 @@ namespace CCSConnector
         ESP_LOGI(TAG, "CMS Available               : %d", moduleStatus[ConnID].CmsAvailable);
         ESP_LOGI(TAG, "CMS Available Changed       : %d", moduleStatus[ConnID].CmsAvailableChanged);
 
-        ESP_LOGI(TAG, "Control Pilot State         : %d", (int)moduleStatus[ConnID].controlPilotState);
-        ESP_LOGI(TAG, "State Machine State         : %d", (int)moduleStatus[ConnID].stateMachineState);
-        ESP_LOGI(TAG, "Control Pilot Duty          : %d", (int)moduleStatus[ConnID].controlPilotDuty);
-        ESP_LOGI(TAG, "Connector Mode              : %d", (int)moduleStatus[ConnID].mode);
+        ESP_LOGI(TAG, "Control Pilot State         : %s (%d)",
+                 GetControlPilotStateString(moduleStatus[ConnID].controlPilotState),
+                 (int)moduleStatus[ConnID].controlPilotState);
+        ESP_LOGI(TAG, "State Machine State         : %s (%d)",
+                 GetStateMachineStateString(moduleStatus[ConnID].stateMachineState),
+                 (int)moduleStatus[ConnID].stateMachineState);
 
+        ESP_LOGI(TAG, "Control Pilot Duty          : %s (%d)",
+                 GetControlPilotDutyString(moduleStatus[ConnID].controlPilotDuty),
+                 (int)moduleStatus[ConnID].controlPilotDuty);
+
+        ESP_LOGI(TAG, "Connector Mode              : %s (%d)",
+                 GetConnectorModeString(moduleStatus[ConnID].mode),
+                 (int)moduleStatus[ConnID].mode);
         ESP_LOGI(TAG, "----- TRANSACTION -----");
         ESP_LOGI(TAG, "Transaction ID              : %d", moduleStatus[ConnID].transactionId);
         ESP_LOGI(TAG, "Charging Duration           : %d", moduleStatus[ConnID].chargingDuration);
-        ESP_LOGI(TAG, "Stop Reason                 : %d", (int)moduleStatus[ConnID].stopReason);
-
+        ESP_LOGI(TAG, "Stop Reason                 : %s (%d)",
+                 GetStopReasonString(moduleStatus[ConnID].stopReason),
+                 (int)moduleStatus[ConnID].stopReason);
         ESP_LOGI(TAG, "Meter Start                 : %.2f", moduleStatus[ConnID].meterStart);
         ESP_LOGI(TAG, "Meter Stop                  : %.2f", moduleStatus[ConnID].meterStop);
 

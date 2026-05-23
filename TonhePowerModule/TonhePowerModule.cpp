@@ -11,7 +11,7 @@ namespace PowerModule
     // Constructor
     TonhePMController::TonhePMController(SendDataFunc func)
     {
-        sendFunc = func;
+        this->sendFunc = func;
         this->ModuleInputModeConfiguration(static_cast<uint8_t>(InputMode::AC));
     }
 
@@ -23,14 +23,14 @@ namespace PowerModule
 
     void TonhePMController::SetSendFunction(SendDataFunc func)
     {
-        sendFunc = func;
+        this->sendFunc = func;
     }
 
     bool TonhePMController::SendData(const uint32_t id, const uint64_t data)
     {
-        if (sendFunc)
+        if (this->sendFunc)
         {
-            return sendFunc(id, data);
+            return this->sendFunc(id, data);
         }
         return false; // or handle error
     }
@@ -215,6 +215,8 @@ namespace PowerModule
         }
         if (moduleId != 0)
         {
+            moduleStatus[moduleId].isAlive = true;
+            moduleStatus[moduleId].AliveCounter = 0;
             switch (static_cast<uint8_t>(data.chargingModuleState.state))
             {
             case 0x00:

@@ -11,6 +11,157 @@
 
 namespace CCSConnector
 {
+
+    void CCSConnectorController::encodeAndSendStatusNotification(uint8_t connId, const char *errorCode, const char *status, const char *info, uint8_t trigger)
+    {
+        bool weakfaultstatusChanged = false;
+        bool connectedToEthernet = false;
+        bool connectedToWifi = false;
+        bool connectedToGsm = false;
+
+        esp_netif_t *default_netif = esp_netif_get_default_netif();
+        if (default_netif != NULL)
+        {
+            if (strcmp(esp_netif_get_desc(default_netif), "ppp") == 0)
+            {
+                connectedToGsm = true;
+            }
+            else if (strcmp(esp_netif_get_desc(default_netif), "sta") == 0)
+            {
+                connectedToWifi = true;
+            }
+            else if (strcmp(esp_netif_get_desc(default_netif), "eth") == 0)
+            {
+                connectedToEthernet = true;
+            }
+        }
+
+        if (trigger == WEAK_SIGNAL_TRIGGER)
+        {
+
+            if (memcmp(ocpp->CPStatusNotificationRequest[connId].status, Faulted, strlen(Faulted) != 0) && network->gsmWeakSignal && connectedToGsm)
+            {
+                setNULL(ocpp->CPStatusNotificationRequest[0].status);
+                memcpy(ocpp->CPStatusNotificationRequest[0].status, ocpp->CPStatusNotificationRequest[connId].status, strlen(ocpp->CPStatusNotificationRequest[connId].status));
+                weakfaultstatusChanged = true;
+                setNULL(ocpp->CPStatusNotificationRequest[connId].status);
+                setNULL(ocpp->CPStatusNotificationRequest[connId].errorCode);
+                setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+                memcpy(ocpp->CPStatusNotificationRequest[connId].status, Faulted, strlen(Faulted));
+                memcpy(ocpp->CPStatusNotificationRequest[connId].errorCode, WeakSignal, strlen(WeakSignal));
+                snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "GSM %ddB", network->gsmSignalStrength);
+            }
+            else if (memcmp(ocpp->CPStatusNotificationRequest[connId].status, Faulted, strlen(Faulted) != 0) && network->wifiWeakSignal && connectedToWifi)
+            {
+                setNULL(ocpp->CPStatusNotificationRequest[0].status);
+                memcpy(ocpp->CPStatusNotificationRequest[0].status, ocpp->CPStatusNotificationRequest[connId].status, strlen(ocpp->CPStatusNotificationRequest[connId].status));
+                weakfaultstatusChanged = true;
+                setNULL(ocpp->CPStatusNotificationRequest[connId].status);
+                setNULL(ocpp->CPStatusNotificationRequest[connId].errorCode);
+                setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+                memcpy(ocpp->CPStatusNotificationRequest[connId].status, Faulted, strlen(Faulted));
+                memcpy(ocpp->CPStatusNotificationRequest[connId].errorCode, WeakSignal, strlen(WeakSignal));
+                snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "WIFI %ddB", network->wifiSignalStrength);
+            }
+            else if (memcmp(ocpp->CPStatusNotificationRequest[connId].status, Faulted, strlen(Faulted) != 0))
+            {
+                setNULL(ocpp->CPStatusNotificationRequest[connId].errorCode);
+                setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+                memcpy(ocpp->CPStatusNotificationRequest[connId].errorCode, errorCode, strlen(errorCode));
+                memcpy(ocpp->CPStatusNotificationRequest[connId].info, info, strlen(info));
+            }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].errorCode);
+            setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+            setNULL(ocpp->CPStatusNotificationRequest[connId].status);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].errorCode, errorCode, strlen(errorCode));
+            memcpy(ocpp->CPStatusNotificationRequest[connId].info, info, strlen(info));
+            memcpy(ocpp->CPStatusNotificationRequest[connId].status, status, strlen(status));
+            if ((memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, OverVoltage, sizeof(OverVoltage)) == 0) ||
+                (memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, UnderVoltage, sizeof(UnderVoltage)) == 0))
+            {
+                setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+                snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "%.1f", moduleStatus[connId].DCMeterValuesFault.voltage);
+            }
+            if (memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, EVCommunicationError, sizeof(EVCommunicationError)) == 0)
+            {
+                // ToDo
+                //  setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+                //  snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "%d", cp_adc_value[connId]);
+            }
+            if (memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, HighTemperature, sizeof(HighTemperature)) == 0)
+            {
+                setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+                snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "%.1f", moduleStatus[connId].DCMeterValuesFault.temperature);
+            }
+            if (memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, OverCurrentFailure, sizeof(OverCurrentFailure)) == 0)
+            {
+                setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+                snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "%.1f", moduleStatus[connId].DCMeterValuesFault.current);
+            }
+        }
+#if WEAK_SIGNAL_ERRORCODE
+        if ((memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, NoError, sizeof(NoError)) == 0) && network->gsmWeakSignal && connectedToGsm)
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].errorCode);
+            setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].errorCode, WeakSignal, strlen(WeakSignal));
+            snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "GSM %ddB", network->gsmSignalStrength);
+        }
+        else if ((memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, NoError, sizeof(NoError)) == 0) && network->wifiWeakSignal && connectedToWifi)
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].errorCode);
+            setNULL(ocpp->CPStatusNotificationRequest[connId].info);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].errorCode, WeakSignal, strlen(WeakSignal));
+            snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "WIFI %lddB", network->wifiSignalStrength);
+        }
+#endif
+#if READER_FAILURE
+        else if ((memcmp(ocpp->CPStatusNotificationRequest[connId].errorCode, NoError, sizeof(NoError)) == 0) && readerFailure)
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].errorCode);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].errorCode, ReaderFailure, strlen(ReaderFailure));
+        }
+#endif
+
+        if (memcmp(ocpp->CPStatusNotificationRequest[connId].info, "EmergencyPressed", strlen("EmergencyPressed")) == 0)
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].vendorErrorCode);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].vendorErrorCode, "EmergencyPressed", strlen("EmergencyPressed"));
+        }
+        else if (memcmp(ocpp->CPStatusNotificationRequest[connId].info, "EarthDisconnect", strlen("EarthDisconnect")) == 0)
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].vendorErrorCode);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].vendorErrorCode, "EarthDisconnect", strlen("EarthDisconnect"));
+        }
+        else
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].vendorErrorCode);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].vendorErrorCode, "None", strlen("None"));
+        }
+
+        if ((memcmp(ocpp->CPStatusNotificationRequest[connId].info, "None", strlen("None")) == 0) && config->gsmEnable && network->gsmSignalStrengthReceived && connectedToGsm)
+            snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "GSM %ddB", network->gsmSignalStrength);
+        if ((memcmp(ocpp->CPStatusNotificationRequest[connId].info, "None", strlen("None")) == 0) && config->wifiEnable && network->wifiSignalStrengthReceived && connectedToWifi)
+            snprintf(ocpp->CPStatusNotificationRequest[connId].info, sizeof(ocpp->CPStatusNotificationRequest[connId].info), "WIFI %ddB", network->wifiSignalStrength);
+        ocpp->CPStatusNotificationRequest[connId].connectorId = connId;
+
+        setNULL(ocpp->CPStatusNotificationRequest[connId].timestamp);
+        SystemTime->getTimeInOcppFormat(ocpp->CPStatusNotificationRequest[connId].timestamp);
+        ocpp->sendStatusNotificationRequest(connId);
+        if (weakfaultstatusChanged)
+        {
+            setNULL(ocpp->CPStatusNotificationRequest[connId].status);
+            memcpy(ocpp->CPStatusNotificationRequest[connId].status, ocpp->CPStatusNotificationRequest[0].status, strlen(ocpp->CPStatusNotificationRequest[0].status));
+        }
+    }
+
     void CCSConnectorController::updateMeterValues(uint8_t connId, bool Aligned, bool AC)
     {
         char EnergyValuestr[20];
@@ -83,6 +234,7 @@ namespace CCSConnector
     // Constructor
     void CCSConnectorController::OcppTask(void *pvParameters)
     {
+        vTaskDelay(pdMS_TO_TICKS(100)); // Example delay
         CCSConnectorController *connector = static_cast<CCSConnectorController *>(pvParameters);
 
         uint8_t ConnID = 0;
@@ -240,7 +392,8 @@ namespace CCSConnector
                     {
                         ocpp->CMSChangeAvailabilityRequest[i].Received = false;
                         connector->moduleStatus[i].CmsAvailableChanged = false;
-                        if (connector->moduleStatus[i].stateMachineState > PLCModule::StateMachineState::Default)
+                        if ((connector->moduleStatus[i].stateMachineState > PLCModule::StateMachineState::Default) &&
+                            (connector->moduleStatus[i].stateMachineState < PLCModule::StateMachineState::SNA))
                         {
                             connector->moduleStatus[i].CmsAvailableScheduled = (memcmp(ocpp->CMSChangeAvailabilityRequest[i].type, Inoperative, strlen(Inoperative)) == 0) ? true : false;
                             setNULL(ocpp->CPChangeAvailabilityResponse.status);
@@ -1613,7 +1766,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, OtherError, Faulted, PowerLoss);
+                            connector->encodeAndSendStatusNotification(connId, PowerSwitchFailure, Faulted, "Input Power Failure", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1638,7 +1791,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, OtherError, Faulted, Emergency);
+                            connector->encodeAndSendStatusNotification(connId, OtherError, Faulted, "EmergencyPressed", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::EMERGENCY_FAULT_LED_STATE;
                             else
@@ -1663,7 +1816,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, GroundFailure, Faulted, NoError);
+                            connector->encodeAndSendStatusNotification(connId, GroundFailure, Faulted, GroundFailure, 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1688,7 +1841,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, OtherError, Faulted, EarthDisconnect);
+                            connector->encodeAndSendStatusNotification(connId, OtherError, Faulted, "EarthDisconnect", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1713,7 +1866,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, OverVoltage, Faulted, NoError);
+                            connector->encodeAndSendStatusNotification(connId, OverVoltage, Faulted, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1738,7 +1891,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, UnderVoltage, Faulted, NoError);
+                            connector->encodeAndSendStatusNotification(connId, UnderVoltage, Faulted, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1763,7 +1916,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, OverCurrentFailure, Faulted, NoError);
+                            connector->encodeAndSendStatusNotification(connId, OverCurrentFailure, Faulted, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1788,7 +1941,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, HighTemperature, Faulted, NoError);
+                            connector->encodeAndSendStatusNotification(connId, HighTemperature, Faulted, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1813,7 +1966,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, OtherError, Faulted, WeldDetect);
+                            connector->encodeAndSendStatusNotification(connId, OtherError, Faulted, WeldDetect, 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::FAULT_LED_STATE;
                             else
@@ -1841,7 +1994,7 @@ namespace CCSConnector
                         connector->moduleStatus[connId].CmsAvailableChanged = false;
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, NoError, Unavailable, NoError);
+                            connector->encodeAndSendStatusNotification(connId, NoError, Unavailable, "None", 0);
 
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::UNAVAILABLE_LED_STATE;
@@ -1868,7 +2021,7 @@ namespace CCSConnector
                         isReserved_old[connId] = true;
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, NoError, Reserved, NoError);
+                            connector->encodeAndSendStatusNotification(connId, NoError, Reserved, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::RESERVATION_LED_STATE;
                             else
@@ -1903,7 +2056,7 @@ namespace CCSConnector
                         connector->moduleStatus[connId].CmsAvailableChanged = false;
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, NoError, Available, NoError);
+                            connector->encodeAndSendStatusNotification(connId, NoError, Available, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::AVAILABLE_LED_STATE;
                             else
@@ -1948,7 +2101,7 @@ namespace CCSConnector
                             finishingStatusPending[connId] = false;
                             if (connector->isWebsocketConnected & connector->isChargerBooted)
                             {
-                                connector->sendStatusNotificationRequest(connId, NoError, Finishing, NoError);
+                                connector->encodeAndSendStatusNotification(connId, NoError, Finishing, "None", 0);
                                 if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                     connector->ledState[connId] = OCPPModule::LED_STATE::FINISHING_LED_STATE;
                                 else
@@ -1970,7 +2123,7 @@ namespace CCSConnector
                         {
                             if (connector->isWebsocketConnected & connector->isChargerBooted)
                             {
-                                connector->sendStatusNotificationRequest(connId, NoError, Preparing, NoError);
+                                connector->encodeAndSendStatusNotification(connId, NoError, Preparing, "None", 0);
                                 if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                     connector->ledState[connId] = OCPPModule::LED_STATE::PREPARING_LED_STATE;
                                 else
@@ -2018,7 +2171,7 @@ namespace CCSConnector
                         }
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, NoError, Charging, NoError);
+                            connector->encodeAndSendStatusNotification(connId, NoError, Charging, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::CHARGING_LED_STATE;
                             else
@@ -2048,7 +2201,7 @@ namespace CCSConnector
                     {
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, NoError, Charging, NoError);
+                            connector->encodeAndSendStatusNotification(connId, NoError, Charging, "None", 0);
                             if (config->networkMode == ConfigModule::NetworkMode::ONLINE_OFFLINE)
                                 connector->ledState[connId] = OCPPModule::LED_STATE::CHARGING_LED_STATE;
                             else
@@ -2082,7 +2235,7 @@ namespace CCSConnector
 
                         if (connector->isWebsocketConnected & connector->isChargerBooted)
                         {
-                            connector->sendStatusNotificationRequest(connId, EVCommunicationError, Faulted, NoError);
+                            connector->encodeAndSendStatusNotification(connId, EVCommunicationError, Faulted, "None", 0);
                         }
 
                         // sendStatusNotificationToDS(connId);

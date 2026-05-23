@@ -41,14 +41,14 @@ namespace NetworkModule
             return "WIFI_REASON_AUTH_EXPIRE";
         case WIFI_REASON_AUTH_LEAVE:
             return "WIFI_REASON_AUTH_LEAVE";
-        case WIFI_REASON_ASSOC_EXPIRE:
-            return "WIFI_REASON_ASSOC_EXPIRE";
+        // case WIFI_REASON_ASSOC_EXPIRE:
+        //     return "WIFI_REASON_ASSOC_EXPIRE";
         case WIFI_REASON_ASSOC_TOOMANY:
             return "WIFI_REASON_ASSOC_TOOMANY";
-        case WIFI_REASON_NOT_AUTHED:
-            return "WIFI_REASON_NOT_AUTHED";
-        case WIFI_REASON_NOT_ASSOCED:
-            return "WIFI_REASON_NOT_ASSOCED";
+        // case WIFI_REASON_NOT_AUTHED:
+        //     return "WIFI_REASON_NOT_AUTHED";
+        // case WIFI_REASON_NOT_ASSOCED:
+        //     return "WIFI_REASON_NOT_ASSOCED";
         case WIFI_REASON_ASSOC_LEAVE:
             return "WIFI_REASON_ASSOC_LEAVE";
         case WIFI_REASON_ASSOC_NOT_AUTHED:
@@ -149,6 +149,9 @@ namespace NetworkModule
             return "WIFI_REASON_ASSOC_COMEBACK_TIME_TOO_LONG";
         case WIFI_REASON_SA_QUERY_TIMEOUT:
             return "WIFI_REASON_SA_QUERY_TIMEOUT";
+        default:
+            return "WIFI_REASON_UNKNOWN";
+            break;
         }
         return "UNKNOWN";
     }

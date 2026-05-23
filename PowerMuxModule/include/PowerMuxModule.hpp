@@ -9,7 +9,7 @@
 #define _INC_POWER_MUX_MODULE_H_
 
 #include <cstdint>
-#include <cstdbool>
+// #include <cstdbool>
 #include <vector>
 #include <array>
 #include <string>
@@ -51,11 +51,11 @@ namespace PowerMuxModule
         uint16_t SuperSetInternalMux2Num;
         uint16_t StackMux1Num;
         uint16_t StackMux2Num;
-        GpioModule::GpioStatus RelayNumStatus;
-        GpioModule::GpioStatus SuperSetInternalMux1NumStatus;
-        GpioModule::GpioStatus SuperSetInternalMux2NumStatus;
-        GpioModule::GpioStatus StackMux1NumStatus;
-        GpioModule::GpioStatus StackMux2NumStatus;
+        GpioModule::GpioState RelayNumStatus;
+        GpioModule::GpioState SuperSetInternalMux1NumStatus;
+        GpioModule::GpioState SuperSetInternalMux2NumStatus;
+        GpioModule::GpioState StackMux1NumStatus;
+        GpioModule::GpioState StackMux2NumStatus;
     } ConnectorMuxesRelays;
 
     typedef struct
@@ -63,14 +63,14 @@ namespace PowerMuxModule
         uint8_t PmId;
         uint8_t subSetNum;
         uint16_t leftRelayNum;
-        uint16_t rightRelayNum;      
-        uint16_t subSetAcContactorNum;      
+        uint16_t rightRelayNum;
+        uint16_t subSetAcContactorNum;
     } PowerModuleConnections;
 
     typedef struct
     {
         uint8_t Connector;
-        uint8_t PmId[20];   // Max PMs For Connector: 30KW x 20 = 600KW Max
+        uint8_t PmId[8]; // Max PMs For Connector: 30KW x 20 = 600KW Max
         uint8_t PmCount;
         uint8_t EVPower;    // Target Power
         uint8_t EVSEPower;  // Actual Power from EVSE
@@ -80,7 +80,9 @@ namespace PowerMuxModule
     struct ModuleStatus
     {
         bool isActive;
+
         // Data from PowerMuxModule to ConnectorModule
+        bool isParameterStateFinished;
         float EVSEMaxCurrent;
         float EVSEMaxVoltage;
 
@@ -91,6 +93,7 @@ namespace PowerMuxModule
         float EVSEPresentVoltage;
 
         float EVSEMaxPower;
+
         // Data from ConnectorModule to PowerMuxModule
         PLCModule::ControlPilotState controlPilotState;
         PLCModule::StateMachineState stateMachineState;
@@ -119,14 +122,16 @@ namespace PowerMuxModule
 
         bool StartPowerModule(uint8_t PmId);
         bool StopPowerModule(uint8_t PmId);
-        bool RelayOff(uint16_t relayId);
+        bool StopDefaultPowerModules(uint8_t connId);
+        bool DcMergerOff(uint8_t mergerId);
+        bool DcMergerOn(uint8_t mergerId);
 
         ConnectorMuxesRelays GetConnectorMuxesRelays(uint8_t connId);
         PowerModule::ModuleStatus GetDefaultPowerModule(uint8_t connId, PowerModuleConnections *PmConnections);
         RelayPowerFlowDirection GetRelayPowerFlowDirection(uint8_t connId,
-                                                            ConnectorMuxesRelays *ConnMuxRelay,
-                                                            PowerModuleConnections *PmConnections,
-                                                            PowerModule::ModuleStatus *PmStatus);
+                                                           ConnectorMuxesRelays *ConnMuxRelay,
+                                                           PowerModuleConnections *PmConnections,
+                                                           PowerModule::ModuleStatus *PmStatus);
         uint8_t GetDestinationConnectorIdFromSuperSetInternalMuxId(uint8_t connId, uint16_t MuxId);
         uint8_t GetDestinationConnectorIdFromStackMuxId(uint8_t connId, uint16_t MuxId);
         bool isolateConnectorAndAssignDefaultPowerModule(uint8_t connId);
@@ -151,14 +156,23 @@ namespace PowerMuxModule
 
         bool IsConnectorIsolated(uint8_t connId);
         bool IsPowerModuleIsolated(uint8_t pmId);
-        bool IsPowerModuleLastConnection(uint8_t pmId);
         bool GetConnectorRelayPMs(uint8_t connId, uint16_t relayId, uint8_t pmId[2]);
         void UpdateConnectorPowerModules();
         bool sufficientPower(uint8_t connId);
+        float AssignedPower(uint8_t connId);
         void optimizePowerModules();
         uint8_t PriorityConnector(uint8_t connId1, uint8_t connId2);
         bool AddPowerModulesToConnector(uint8_t connId);
         bool RemovePowerModulesFromConnector(uint8_t connId);
+
+        // 2gun standalone
+        bool AssignDefaultPowerModules(uint8_t connId);
+        void AssignAvailablePowerModules(uint8_t connId);
+        bool IsolatePowerModules(uint8_t pmId);
+        bool IsolateDefaultPowerModules(uint8_t connId);
+        void OptimizePowerModulesForStandAlone();
+        uint8_t GetMergerId(uint8_t pmId, uint8_t connId);
+        void GetConnections(uint8_t pmId, uint8_t &connId, uint8_t &leftMerger, uint8_t &rightMerger);
 
         ~PowerMuxController();
 

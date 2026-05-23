@@ -6,8 +6,9 @@ idf_component_register(SRCS
                     INCLUDE_DIRS "include"
 
                     REQUIRES 
+                    esp_driver_spi
+                    esp_driver_uart
                     ConfigModule
-                    json
                     esp_event
                     tcp_transport
                     esp_wifi
@@ -16,4 +17,7 @@ idf_component_register(SRCS
                     esp_system
                     esp_modem
                     esp_websocket_client
+                    PRIV_REQUIRES
+                    espressif__cjson
+                    espressif__w5500
                     )

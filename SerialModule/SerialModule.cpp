@@ -3,14 +3,14 @@
 #include <freertos/queue.h>
 #include <esp_log.h>
 #include "SerialModule.hpp"
+#include "ConfigModule.hpp"
 #include <driver/uart.h>
 #include <cstring>
 
 #define TAG "SerialModule"
 
 const uart_port_t SErial_UART = UART_NUM_2;
-#define SLAVE_TX_PIN 25
-#define SLAVE_RX_PIN 33
+
 #define SLAVE_BUFF_SIZE 1024
 
 SerialModule::SerialController *serial;
@@ -60,6 +60,7 @@ namespace SerialModule
 
     void SerialController::serialTask(void *pvParameters)
     {
+        vTaskDelay(pdMS_TO_TICKS(100)); // Delay to ensure other modules are initialized
         uint8_t slave_data[SLAVE_BUFF_SIZE];
         uint8_t receivedByte = 0;
         memset(&serial_uart, 0, sizeof(serial_uart));
@@ -170,21 +171,23 @@ namespace SerialModule
     // Constructor
     SerialController::SerialController(ReceiveDataFunc func)
     {
-        uart_config_t uart_config = {
-            .baud_rate = 115200,
-            .data_bits = UART_DATA_8_BITS,
-            .parity = UART_PARITY_DISABLE,
-            .stop_bits = UART_STOP_BITS_1,
-            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-            .source_clk = UART_SCLK_DEFAULT,
-            .flags{
-                .allow_pd = false,
-                .backup_before_sleep = false}};
+        uart_config_t uart_config = {};
+
+        uart_config.baud_rate = 115200;
+        uart_config.data_bits = UART_DATA_8_BITS;
+        uart_config.parity = UART_PARITY_DISABLE;
+        uart_config.stop_bits = UART_STOP_BITS_1;
+        uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
+        uart_config.rx_flow_ctrl_thresh = 0;
+        uart_config.source_clk = UART_SCLK_DEFAULT;
+
         uart_param_config(SErial_UART, &uart_config);
-        uart_set_pin(SErial_UART, SLAVE_TX_PIN, SLAVE_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+        uart_set_pin(SErial_UART, ESP_TX_PIN, ESP_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
         uart_driver_install(SErial_UART, 2048, 2048, 0, NULL, 0);
+
         xTaskCreate(&serialTask, "serialTask", 4096, this, 2, NULL);
-        receiveFunc = func;
+
+        this->receiveFunc = func;
     }
 
     // Destructor
@@ -195,7 +198,7 @@ namespace SerialModule
 
     void SerialController::SetReceiveFunction(ReceiveDataFunc func)
     {
-        receiveFunc = func;
+        this->receiveFunc = func;
     }
 
     bool SerialController::SendData(const PacketId id, uint8_t *data, uint16_t length)

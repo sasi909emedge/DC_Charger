@@ -1,3 +1,3 @@
 idf_component_register(SRCS "SerialModule.cpp"
                     INCLUDE_DIRS "include"
-                    REQUIRES driver TimeModule)
+                    REQUIRES esp_driver_uart TimeModule ConfigModule)

@@ -10,7 +10,7 @@
 #define INC_OCPPMODULE_H_
 
 #include <cstdint>
-#include <cstdbool>
+// #include <cstdbool>
 #include <vector>
 #include <array>
 #include <string>
@@ -307,10 +307,10 @@ namespace OCPPModule
    {
       uint32_t connectorId;
       char errorCode[25];
-      // char info[50];
+      char info[50];
       char status[15];
       char timestamp[25];
-      // char vendorId[255];
+      char vendorId[255];
       char vendorErrorCode[25];
       char UniqId[CP_MESSAGEID_LENGTH];
       bool Sent;
@@ -1126,6 +1126,11 @@ namespace OCPPModule
       LocalAuthorizationList_t LocalAuthorizationList;
 
       void sendGetConfigurationResponseKeys(uint8_t count);
+      const char *GetStopReasonString(OCPPModule::StopReasons reason);
+
+   private:
+      void printLocalList();
+      void printLocalAuthList();
    };
 
 } // namespace PLCModule

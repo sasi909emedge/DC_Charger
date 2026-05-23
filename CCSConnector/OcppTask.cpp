@@ -12,7 +12,7 @@
 namespace CCSConnector
 {
 
-    void CCSConnectorController::encodeAndSendStatusNotification(uint8_t connId, char *errorCode, char *status, char *info, uint8_t trigger)
+    void CCSConnectorController::encodeAndSendStatusNotification(uint8_t connId, const char *errorCode, const char *status, const char *info, uint8_t trigger)
     {
         bool weakfaultstatusChanged = false;
         bool connectedToEthernet = false;
@@ -234,6 +234,7 @@ namespace CCSConnector
     // Constructor
     void CCSConnectorController::OcppTask(void *pvParameters)
     {
+        vTaskDelay(pdMS_TO_TICKS(100)); // Example delay
         CCSConnectorController *connector = static_cast<CCSConnectorController *>(pvParameters);
 
         uint8_t ConnID = 0;

@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+C:/DevProjects/DC_Charger/build/CMakeFiles/bootloader
+C:/DevProjects/DC_Charger/build/CMakeFiles/bootloader.rule
+C:/DevProjects/DC_Charger/build/CMakeFiles/bootloader-complete.rule
+C:/DevProjects/DC_Charger/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+C:/DevProjects/DC_Charger/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+C:/DevProjects/DC_Charger/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+C:/DevProjects/DC_Charger/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+C:/DevProjects/DC_Charger/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+C:/DevProjects/DC_Charger/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+C:/DevProjects/DC_Charger/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

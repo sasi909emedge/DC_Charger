@@ -9,7 +9,7 @@
 #define INC_SERIALMODULE_H_
 
 #include <cstdint>
-#include <cstdbool>
+// #include <cstdbool>
 #include <vector>
 #include <array>
 #include <string>

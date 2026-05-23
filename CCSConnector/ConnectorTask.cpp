@@ -193,7 +193,7 @@ namespace CCSConnector
             }
         }
 
-        if (TransactionAuthorized[ConnID] && isPowerModuleAssigned)
+        if (TransactionAuthorized[ConnID])
         {
             plc->Set_EVSEStatusCode(ConnID, PLCModule::EVSEStatusCode::EVSE_Ready);
             plc->Set_EVSEIsolationStatus(ConnID, PLCModule::EVSEIsolationStatus::Invalid);
@@ -207,8 +207,15 @@ namespace CCSConnector
 
     void CCSConnectorController::ProcessStateMachineStateParameter(uint8_t ConnID)
     {
-        plc->Set_EVSEProcessingCPD(ConnID, PLCModule::EVSEProcessing::Finished);
-        plc->Set_EVSEIsolationStatus(ConnID, PLCModule::EVSEIsolationStatus::Invalid);
+        if (connector->moduleStatus[ConnID].isParameterStateFinished)
+        {
+            plc->Set_EVSEProcessingCPD(ConnID, PLCModule::EVSEProcessing::Finished);
+            plc->Set_EVSEIsolationStatus(ConnID, PLCModule::EVSEIsolationStatus::Invalid);
+        }
+        else
+        {
+            plc->Set_EVSEProcessingCPD(ConnID, PLCModule::EVSEProcessing::Ongoing);
+        }
     }
     void CCSConnectorController::ProcessStateMachineStateIsolation(uint8_t ConnID)
     {
@@ -219,7 +226,7 @@ namespace CCSConnector
     }
     void CCSConnectorController::ProcessStateMachineStatePreCharge(uint8_t ConnID)
     {
-        gpio->ConnectorContactorOn(ConnID);
+        gpio->GpioStateSet(gpio->DcGun[ConnID], GpioModule::GpioState::ON);
     }
 
     void CCSConnectorController::ProcessStateMachineStateCharge(uint8_t ConnID)
@@ -328,7 +335,7 @@ namespace CCSConnector
             plc->Set_EVSEStatusCode(ConnID, PLCModule::EVSEStatusCode::EVSE_EmergencyShutdown);
         if (moduleStatus[ConnID].DCMeterValues.current < 1.0f)
         {
-            gpio->ConnectorContactorOff(ConnID);
+            gpio->GpioStateSet(gpio->DcGun[ConnID], GpioModule::GpioState::OFF);
         }
     }
     void CCSConnectorController::ProcessStateMachineStateWelding(uint8_t ConnID)
@@ -463,6 +470,7 @@ namespace CCSConnector
 
     void CCSConnectorController::ConnectorTask(void *pvParameters)
     {
+        vTaskDelay(pdMS_TO_TICKS(100)); // Example delay
         CCSConnectorController *connector = static_cast<CCSConnectorController *>(pvParameters);
         // get task name
         const char *currentTaskName = pcTaskGetName(NULL);

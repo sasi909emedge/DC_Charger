@@ -9,114 +9,13 @@
 #define TAG "Connector"
 #define TAG_STATUS "Status"
 
-static const char *GetControlPilotStateString(PLCModule::ControlPilotState state)
-{
-    switch (state)
-    {
-    case PLCModule::ControlPilotState::A:
-        return "A";
-    case PLCModule::ControlPilotState::B:
-        return "B";
-    case PLCModule::ControlPilotState::C:
-        return "C";
-    case PLCModule::ControlPilotState::D:
-        return "D";
-    case PLCModule::ControlPilotState::E:
-        return "E";
-    case PLCModule::ControlPilotState::F:
-        return "F";
-    case PLCModule::ControlPilotState::SNA:
-        return "SNA";
-    default:
-        return "UNKNOWN";
-    }
-}
-
-static const char *GetStateMachineStateString(PLCModule::StateMachineState state)
-{
-    switch (state)
-    {
-    case PLCModule::StateMachineState::Idle:
-        return "Idle";
-    case PLCModule::StateMachineState::Authentication:
-        return "Authentication";
-    case PLCModule::StateMachineState::Parameter:
-        return "Parameter";
-    case PLCModule::StateMachineState::Isolation:
-        return "Isolation";
-    case PLCModule::StateMachineState::PreCharge:
-        return "PreCharge";
-    case PLCModule::StateMachineState::Charge:
-        return "Charge";
-    case PLCModule::StateMachineState::StopCharge:
-        return "StopCharge";
-    case PLCModule::StateMachineState::Finish:
-        return "Finish";
-    case PLCModule::StateMachineState::Fault:
-        return "Fault";
-    case PLCModule::StateMachineState::SNA:
-        return "SNA";
-    default:
-        return "UNKNOWN";
-    }
-}
-
-static const char *GetControlPilotDutyString(PLCModule::ControlPilotDuty duty)
-{
-    switch (duty)
-    {
-    case PLCModule::ControlPilotDuty::Duty0:
-        return "Duty0";
-    case PLCModule::ControlPilotDuty::Duty100:
-        return "Duty100";
-    case PLCModule::ControlPilotDuty::HLC:
-        return "HLC";
-    case PLCModule::ControlPilotDuty::SNA:
-        return "SNA";
-    default:
-        return "UNKNOWN";
-    }
-}
-
-static const char *GetConnectorModeString(CCSConnector::ConnectorMode mode)
-{
-    switch (mode)
-    {
-    case CCSConnector::ConnectorMode::AC:
-        return "AC";
-    case CCSConnector::ConnectorMode::DC:
-        return "DC";
-    default:
-        return "UNKNOWN";
-    }
-}
-
-static const char *GetStopReasonString(OCPPModule::StopReasons reason)
-{
-    switch (reason)
-    {
-    case OCPPModule::StopReasons::Stop_Remote:
-        return "RemoteStop";
-    case OCPPModule::StopReasons::Stop_EVDisconnected:
-        return "EVDisconnected";
-    case OCPPModule::StopReasons::Stop_EmergencyStop:
-        return "EmergencyStop";
-    case OCPPModule::StopReasons::Stop_PowerLoss:
-        return "PowerLoss";
-    case OCPPModule::StopReasons::Stop_Other:
-        return "Other";
-    default:
-        return "UNKNOWN";
-    }
-}
-
 CCSConnector::CCSConnectorController *connector;
 namespace CCSConnector
 {
     // Constructor
     CCSConnectorController ::CCSConnectorController(SendDataFunc sendFunction)
     {
-        sendFunc = sendFunction;
+        this->sendFunc = sendFunction;
         counting_semaphore = xSemaphoreCreateCounting(5, 0);
         Initialize();
 
@@ -141,13 +40,13 @@ namespace CCSConnector
 
     void CCSConnectorController::SetSendFunction(SendDataFunc func)
     {
-        sendFunc = func;
+        this->sendFunc = func;
     }
     bool CCSConnectorController::SendData(const uint32_t id, const uint64_t data)
     {
-        if (sendFunc)
+        if (this->sendFunc)
         {
-            return sendFunc(id, data);
+            return this->sendFunc(id, data);
         }
         return true; // or handle error
     }
@@ -163,6 +62,7 @@ namespace CCSConnector
             ConnID = EVSEMax.ConnectorId;
             plc->Set_EVSEMaxCurrent(ConnID, static_cast<float>(EVSEMax.EVSEMaxCurrent * PLCModule::Constants::CURRENT_SCALE));
             plc->Set_EVSEMaxVoltage(ConnID, static_cast<float>(EVSEMax.EVSEMaxVoltage * PLCModule::Constants::VOLTAGE_SCALE));
+            connector->moduleStatus[ConnID].isParameterStateFinished = EVSEMax.isParameterStateFinished;
             break;
         default:
             break;
@@ -320,6 +220,7 @@ namespace CCSConnector
             strcpy(status.meterStop_time, cJSON_GetObjectItem(json, "meterStop_time")->valuestring);
 
             cJSON_Delete(json);
+            break;
         }
 
         case ESP_ERR_NOT_FOUND:
@@ -698,7 +599,6 @@ namespace CCSConnector
         isWifiConnected = false;
         isWebsocketConnected = false;
         isWebsocketConnected_old = false;
-        isPowerModuleAssigned = false;
         emergency = false;
         earthDisconnect = false;
         powerLoss = false;
@@ -780,7 +680,6 @@ namespace CCSConnector
             controlPilotDuty_old[i] = PLCModule::ControlPilotDuty::SNA;
             stateMachineState_old[i] = PLCModule::StateMachineState::SNA;
         }
-        PrintConnectorParameters();
     }
 
     CCSConnector::ModuleStatus CCSConnectorController::GetModuleStatus(uint8_t ConnID)
@@ -800,117 +699,119 @@ namespace CCSConnector
         }
     }
 
-    void CCSConnectorController::PrintConnectorParameters()
-    {
-        ESP_LOGI(TAG, "========================================");
-        ESP_LOGI(TAG, "     CCS CONNECTOR PARAMETERS");
-        ESP_LOGI(TAG, "========================================");
-
-        ESP_LOGI(TAG, "Number of Connectors : %d", NUM_OF_CONNECTORS);
-        ESP_LOGI(TAG, "Charger boot staus   : %d", this->isChargerBooted);
-        ESP_LOGI(TAG, "isPoweredOn          : %d", this->isPoweredOn);
-        ESP_LOGI(TAG, "isWifiConnected      : %d", this->isWifiConnected);
-        ESP_LOGI(TAG, "isWebsocketConnected : %d", this->isWebsocketConnected);
-        ESP_LOGI(TAG, "isPowerModuleAssined : %d", this->isPowerModuleAssigned);
-        ESP_LOGI(TAG, "Emergency            : %d", this->emergency);
-        ESP_LOGI(TAG, "earthDisconnect      : %d", this->earthDisconnect);
-        ESP_LOGI(TAG, ".....");
-        ESP_LOGI(TAG, ".....");
-        ESP_LOGI(TAG, "========================================");
-    }
-
     void CCSConnectorController::PrintConnectorModuleStatusParameters(uint8_t ConnID)
     {
+        // TODO: Remove unnecessary values or make them LOGD
         ESP_LOGI(TAG, "========================================");
         ESP_LOGI(TAG, "     CCS CONNECTOR MODULE STATUS ");
         ESP_LOGI(TAG, "========================================");
 
         ESP_LOGI(TAG, "Connector ID                : %d", ConnID);
 
-        ESP_LOGI(TAG, "----- CONNECTOR STATE -----");
-        ESP_LOGI(TAG, "Transaction Ongoing         : %d", moduleStatus[ConnID].isTransactionOngoing);
-        ESP_LOGI(TAG, "Offline Started             : %d", moduleStatus[ConnID].offlineStarted);
-        ESP_LOGI(TAG, "Reserved                    : %d", moduleStatus[ConnID].isReserved);
-        ESP_LOGI(TAG, "CMS Available               : %d", moduleStatus[ConnID].CmsAvailable);
-        ESP_LOGI(TAG, "CMS Available Changed       : %d", moduleStatus[ConnID].CmsAvailableChanged);
+        ESP_LOGI(TAG, "---------- CONNECTOR STATE ----------");
+        ESP_LOGI(TAG, "Transaction Ongoing         : %s", moduleStatus[ConnID].isTransactionOngoing ? "true" : "false");
+        ESP_LOGI(TAG, "Offline Started             : %s", moduleStatus[ConnID].offlineStarted ? "true" : "false");
+        ESP_LOGI(TAG, "Reserved                    : %s", moduleStatus[ConnID].isReserved ? "true" : "false");
+        ESP_LOGI(TAG, "CMS Available Scheduled     : %s", moduleStatus[ConnID].CmsAvailableScheduled ? "true" : "false");
+        ESP_LOGI(TAG, "CMS Available               : %s", moduleStatus[ConnID].CmsAvailable ? "true" : "false");
+        ESP_LOGI(TAG, "CMS Available Changed       : %s", moduleStatus[ConnID].CmsAvailableChanged ? "true" : "false");
+        ESP_LOGI(TAG, "UnkownId                    : %s", moduleStatus[ConnID].UnkownId ? "true" : "false");
+        ESP_LOGI(TAG, "InvalidId                   : %s", moduleStatus[ConnID].InvalidId ? "true" : "false");
 
-        ESP_LOGI(TAG, "Control Pilot State         : %s (%d)",
-                 GetControlPilotStateString(moduleStatus[ConnID].controlPilotState),
-                 (int)moduleStatus[ConnID].controlPilotState);
-        ESP_LOGI(TAG, "State Machine State         : %s (%d)",
-                 GetStateMachineStateString(moduleStatus[ConnID].stateMachineState),
-                 (int)moduleStatus[ConnID].stateMachineState);
+        ESP_LOGI(TAG, "Control Pilot State         : %s", plc->GetControlPilotStateString(moduleStatus[ConnID].controlPilotState));
+        ESP_LOGI(TAG, "State Machine State         : %s", plc->GetStateMachineStateString(moduleStatus[ConnID].stateMachineState));
+        ESP_LOGI(TAG, "Control Pilot Duty          : %s", plc->GetControlPilotDutyString(moduleStatus[ConnID].controlPilotDuty));
+        ESP_LOGI(TAG, "Connector Mode              : %s",
+                 moduleStatus[ConnID].mode == ConnectorMode::AC ? "AC" : moduleStatus[ConnID].mode == ConnectorMode::DC ? "DC"
+                                                                                                                        : "Invalid");
 
-        ESP_LOGI(TAG, "Control Pilot Duty          : %s (%d)",
-                 GetControlPilotDutyString(moduleStatus[ConnID].controlPilotDuty),
-                 (int)moduleStatus[ConnID].controlPilotDuty);
-
-        ESP_LOGI(TAG, "Connector Mode              : %s (%d)",
-                 GetConnectorModeString(moduleStatus[ConnID].mode),
-                 (int)moduleStatus[ConnID].mode);
-        ESP_LOGI(TAG, "----- TRANSACTION -----");
+        ESP_LOGI(TAG, "---------- TRANSACTION ----------");
         ESP_LOGI(TAG, "Transaction ID              : %d", moduleStatus[ConnID].transactionId);
-        ESP_LOGI(TAG, "Charging Duration           : %d", moduleStatus[ConnID].chargingDuration);
-        ESP_LOGI(TAG, "Stop Reason                 : %s (%d)",
-                 GetStopReasonString(moduleStatus[ConnID].stopReason),
-                 (int)moduleStatus[ConnID].stopReason);
+        // ESP_LOGI(TAG, "Charging Duration           : %d", moduleStatus[ConnID].chargingDuration);
+        uint32_t total_sec = moduleStatus[ConnID].chargingDuration;
+        ESP_LOGI(TAG, "Charging Duration           : %02u:%02u:%02u",
+                 (total_sec / 3600),      // Hours
+                 (total_sec % 3600) / 60, // Minutes
+                 (total_sec % 60));       // Seconds
+
+        ESP_LOGI(TAG, "Stop Reason                 : %s", ocpp->GetStopReasonString(moduleStatus[ConnID].stopReason));
         ESP_LOGI(TAG, "Meter Start                 : %.2f", moduleStatus[ConnID].meterStart);
         ESP_LOGI(TAG, "Meter Stop                  : %.2f", moduleStatus[ConnID].meterStop);
-
         ESP_LOGI(TAG, "DC Meter Start              : %.2f", moduleStatus[ConnID].DCmeterStart);
         ESP_LOGI(TAG, "DC Meter Stop               : %.2f", moduleStatus[ConnID].DCmeterStop);
-
         ESP_LOGI(TAG, "AC Meter Start              : %.2f", moduleStatus[ConnID].ACmeterStart);
         ESP_LOGI(TAG, "AC Meter Stop               : %.2f", moduleStatus[ConnID].ACmeterStop);
-
         ESP_LOGI(TAG, "Energy                      : %.2f", moduleStatus[ConnID].Energy);
 
-        ESP_LOGI(TAG, "----- AC METER VALUES -----");
-        ESP_LOGI(TAG, "Voltage L1                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[0]);
-        ESP_LOGI(TAG, "Voltage L2                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[1]);
-        ESP_LOGI(TAG, "Voltage L3                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[2]);
-        ESP_LOGI(TAG, "Voltage L4                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[3]);
+        ESP_LOGI(TAG, "---------- AC METER VALUES ----------");
+        ESP_LOGD(TAG, "Voltage L0                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[0]);
+        ESP_LOGI(TAG, "Voltage L1                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[1]);
+        ESP_LOGI(TAG, "Voltage L2                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[2]);
+        ESP_LOGI(TAG, "Voltage L3                  : %.2f", moduleStatus[ConnID].ACMeterValues.voltage[3]);
 
-        ESP_LOGI(TAG, "Current L1                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[0]);
-        ESP_LOGI(TAG, "Current L2                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[1]);
-        ESP_LOGI(TAG, "Current L3                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[2]);
-        ESP_LOGI(TAG, "Current L4                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[3]);
+        ESP_LOGD(TAG, "Current L0                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[0]);
+        ESP_LOGI(TAG, "Current L1                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[1]);
+        ESP_LOGI(TAG, "Current L2                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[2]);
+        ESP_LOGI(TAG, "Current L3                  : %.2f", moduleStatus[ConnID].ACMeterValues.current[3]);
 
-        ESP_LOGI(TAG, "Power L1                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[0]);
-        ESP_LOGI(TAG, "Power L2                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[1]);
-        ESP_LOGI(TAG, "Power L3                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[2]);
-        ESP_LOGI(TAG, "Power L4                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[3]);
+        ESP_LOGD(TAG, "Power L0                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[0]);
+        ESP_LOGI(TAG, "Power L1                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[1]);
+        ESP_LOGI(TAG, "Power L2                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[2]);
+        ESP_LOGI(TAG, "Power L3                    : %.2f", moduleStatus[ConnID].ACMeterValues.power[3]);
 
         ESP_LOGI(TAG, "Temperature                 : %.2f", moduleStatus[ConnID].ACMeterValues.temperature);
         ESP_LOGI(TAG, "Power Factor                : %.2f", moduleStatus[ConnID].ACMeterValues.powerFactor);
 
-        ESP_LOGI(TAG, "----- DC METER VALUES -----");
+        ESP_LOGI(TAG, "---------- DC METER VALUES ----------");
         ESP_LOGI(TAG, "DC Voltage                  : %.2f", moduleStatus[ConnID].DCMeterValues.voltage);
         ESP_LOGI(TAG, "DC Current                  : %.2f", moduleStatus[ConnID].DCMeterValues.current);
         ESP_LOGI(TAG, "DC Power                    : %.2f", moduleStatus[ConnID].DCMeterValues.power);
         ESP_LOGI(TAG, "DC Temperature              : %.2f", moduleStatus[ConnID].DCMeterValues.temperature);
 
-        ESP_LOGI(TAG, "----- RESERVATION DATA -----");
+        ESP_LOGI(TAG, "---------- RESERVATION DATA ----------");
         ESP_LOGI(TAG, "Reserved ID Tag             : %s", moduleStatus[ConnID].ReservedData.idTag);
         ESP_LOGI(TAG, "Expiry Date                 : %s", moduleStatus[ConnID].ReservedData.expiryDate);
         ESP_LOGI(TAG, "Parent ID Tag               : %s", moduleStatus[ConnID].ReservedData.parentidTag);
         ESP_LOGI(TAG, "Reservation ID              : %d", moduleStatus[ConnID].ReservedData.reservationId);
 
-        ESP_LOGI(TAG, "----- USER DATA -----");
+        ESP_LOGI(TAG, "---------- USER DATA ----------");
         ESP_LOGI(TAG, "ID Tag                      : %s", moduleStatus[ConnID].idTag);
         ESP_LOGI(TAG, "Meter Start Time            : %s", moduleStatus[ConnID].meterStart_time);
         ESP_LOGI(TAG, "Meter Stop Time             : %s", moduleStatus[ConnID].meterStop_time);
 
-        ESP_LOGI(TAG, "----- FAULT VALUES -----");
-        ESP_LOGI(TAG, "AC Fault Voltage            : %.2f", moduleStatus[ConnID].ACMeterValuesFault.voltage);
-        ESP_LOGI(TAG, "AC Fault Current            : %.2f", moduleStatus[ConnID].ACMeterValuesFault.current);
-        ESP_LOGI(TAG, "AC Fault Power              : %.2f", moduleStatus[ConnID].ACMeterValuesFault.power);
+        ESP_LOGI(TAG, "---------- FAULT VALUES ----------");
+        ESP_LOGD(TAG, "AC Fault Voltage L0         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.voltage[0]);
+        ESP_LOGI(TAG, "AC Fault Voltage L1         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.voltage[1]);
+        ESP_LOGI(TAG, "AC Fault Voltage L2         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.voltage[2]);
+        ESP_LOGI(TAG, "AC Fault Voltage L3         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.voltage[3]);
+
+        ESP_LOGD(TAG, "AC Fault Current L0         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.current[0]);
+        ESP_LOGI(TAG, "AC Fault Current L1         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.current[1]);
+        ESP_LOGI(TAG, "AC Fault Current L2         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.current[2]);
+        ESP_LOGI(TAG, "AC Fault Current L3         : %.2f", moduleStatus[ConnID].ACMeterValuesFault.current[3]);
+
+        ESP_LOGD(TAG, "AC Fault Power L0           : %.2f", moduleStatus[ConnID].ACMeterValuesFault.power[0]);
+        ESP_LOGI(TAG, "AC Fault Power L1           : %.2f", moduleStatus[ConnID].ACMeterValuesFault.power[1]);
+        ESP_LOGI(TAG, "AC Fault Power L2           : %.2f", moduleStatus[ConnID].ACMeterValuesFault.power[2]);
+        ESP_LOGI(TAG, "AC Fault Power L3           : %.2f", moduleStatus[ConnID].ACMeterValuesFault.power[3]);
+
+        ESP_LOGI(TAG, "AC Fault Temperature        : %.2f", moduleStatus[ConnID].ACMeterValuesFault.temperature);
+        ESP_LOGI(TAG, "AC Fault Power Factor       : %.2f", moduleStatus[ConnID].ACMeterValuesFault.powerFactor);
 
         ESP_LOGI(TAG, "DC Fault Voltage            : %.2f", moduleStatus[ConnID].DCMeterValuesFault.voltage);
         ESP_LOGI(TAG, "DC Fault Current            : %.2f", moduleStatus[ConnID].DCMeterValuesFault.current);
         ESP_LOGI(TAG, "DC Fault Power              : %.2f", moduleStatus[ConnID].DCMeterValuesFault.power);
+        ESP_LOGI(TAG, "DC Fault Temperature        : %.2f", moduleStatus[ConnID].DCMeterValuesFault.temperature);
 
-        ESP_LOGI(TAG, "EV MAC Address              : %llu", moduleStatus[ConnID].EVMacAddress);
+        // ESP_LOGI(TAG, "EV MAC Address              : %llu", moduleStatus[ConnID].EVMacAddress);
+        uint64_t mac = moduleStatus[ConnID].EVMacAddress;
+        ESP_LOGI(TAG, "EV MAC Address              : %02X:%02X:%02X:%02X:%02X:%02X",
+                 (uint8_t)(mac >> 40),
+                 (uint8_t)(mac >> 32),
+                 (uint8_t)(mac >> 24),
+                 (uint8_t)(mac >> 16),
+                 (uint8_t)(mac >> 8),
+                 (uint8_t)(mac));
 
         ESP_LOGI(TAG, "========================================");
     }

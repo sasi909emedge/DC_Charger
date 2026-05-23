@@ -259,6 +259,7 @@ namespace NetworkModule
 
     void NetworkController::networkTask(void *pvParameters)
     {
+        vTaskDelay(pdMS_TO_TICKS(100)); // Delay to ensure other modules are initialized
         bool wifiWeakSignal_old;
 
         uint8_t modem_reset_count = 0;
@@ -316,7 +317,10 @@ namespace NetworkModule
             esp_wifi_connect();
         }
         vTaskDelay(pdMS_TO_TICKS(2000));
-        websocket_app_start();
+        if (network->isWifiConnected || network->isGsmConnected || network->isEthernetConnected)
+        {
+            websocket_app_start();
+        }
         uint32_t loopCount = 0;
         uint8_t InterfaceId = 3;
         uint8_t InterfaceId_old = 3;
@@ -338,7 +342,7 @@ namespace NetworkModule
                             if (ret == ESP_OK)
                             {
                                 network->wifiSignalStrengthReceived = true;
-                                ESP_LOGI("WIFI", "RSSI: %ld dBm", rssi);
+                                ESP_LOGD("WIFI", "RSSI: %ld dBm", rssi);
                                 if (rssi <= -90)
                                 {
                                     if (network->wifiWeakSignal)
@@ -377,7 +381,7 @@ namespace NetworkModule
                     }
                 }
                 if ((InterfaceId_old != InterfaceId) &&
-                    (InterfaceId_old >= 0) &&
+                    // (InterfaceId_old >= 0) &&
                     (InterfaceId != 3))
                 {
                     // ToDo networkSwitchedUpdateDisplay();
@@ -392,7 +396,7 @@ namespace NetworkModule
                 {
                     WebsocketOffWithNetworkCount++;
                 }
-                ESP_LOGI(TAG, "WebsocketOffWithNetworkCount %ld", WebsocketOffWithNetworkCount);
+                ESP_LOGD(TAG, "WebsocketOffWithNetworkCount %ld", WebsocketOffWithNetworkCount);
                 if (WebsocketOffWithNetworkCount > 5)
                 {
                     if (config->gsmEnable)
@@ -404,21 +408,18 @@ namespace NetworkModule
                     }
                     WebsocketOffWithNetworkCount = 0;
                 }
-                ESP_LOGI(TAG, "isWebsocketConnected %s", network->isWebsocketConnected ? "True" : "False");
+                ESP_LOGD(TAG, "isWebsocketConnected %s", network->isWebsocketConnected ? "True" : "False");
                 if (config->wifiEnable)
-                    ESP_LOGI(TAG, "wifi connected : %s", network->isWifiConnected ? "True" : "False");
+                    ESP_LOGD(TAG, "wifi connected : %s", network->isWifiConnected ? "True" : "False");
                 if (config->gsmEnable)
-                    ESP_LOGI(TAG, "GSM connected : %s", network->isGsmConnected ? "True" : "False");
+                    ESP_LOGD(TAG, "GSM connected : %s", network->isGsmConnected ? "True" : "False");
                 if (config->ethernetEnable)
-                    ESP_LOGI(TAG, "Ethernet connected : %s", network->isEthernetConnected ? "True" : "False");
+                    ESP_LOGD(TAG, "Ethernet connected : %s", network->isEthernetConnected ? "True" : "False");
 
                 ESP_LOGD(TAG, "loopCount %ld", loopCount);
 
-                if (InterfaceId == 0)
-                {
-                    if (network->isWifiConnected == false) // && (FirmwareUpdateStarted == false))
-                        esp_wifi_connect();
-                }
+                if (network->isWifiConnected == false) // && (FirmwareUpdateStarted == false))
+                    esp_wifi_connect();
 
                 if ((network->isWebsocketConnected == false) && (default_netif != NULL))
                 {
@@ -442,7 +443,7 @@ namespace NetworkModule
 
                         if (network->isWifiConnected || network->isGsmConnected || network->isEthernetConnected)
                         {
-                            // websocket_app_start();
+                            websocket_app_start();
                         }
 
                         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -664,7 +665,7 @@ namespace NetworkModule
     // Constructor
     NetworkController::NetworkController(ReceiveDataFunc receiveFunction)
     {
-        receiveFunc = receiveFunction;
+        this->receiveFunc = receiveFunction;
         network = this;
         isWebsocketConnected = false;
         isDiagnosticServerConnected = false;

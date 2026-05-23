@@ -2,18 +2,24 @@
 #include "cJSON.h"
 #include <cstring>
 #include <cmath>
+#include "esp_ota_ops.h"
 
 #define TAG "CONFIG"
 
 ConfigModule::Configuration *config;
 namespace ConfigModule
 {
-   // Constructor
+    // Constructor
     Configuration::Configuration()
     {
-        //storage->Readconfig((uint8_t *)&config, sizeof(Config_t));
-        // if (this->defaultConfig == false)`
+        esp_err_t err = ReadConfigurationFromFlash();
+        if (err == ESP_OK)
         {
+            ESP_LOGI(TAG, "Configuration loaded from flash successfully");
+        }
+        else
+        {
+            ESP_LOGW(TAG, "Failed to load configuration from flash, using default values");
             memset(this->serialNumber, '\0', sizeof(this->serialNumber));
             memset(this->chargerName, '\0', sizeof(this->chargerName));
             memset(this->chargePointVendor, '\0', sizeof(this->chargePointVendor));
@@ -52,8 +58,11 @@ namespace ConfigModule
             memcpy(this->commissionedDate, "2025-06-02", strlen("2025-06-02"));
             memcpy(this->simIMEINumber, "864180056160042", strlen("864180056160042"));
             memcpy(this->simIMSINumber, "404920406446951", strlen("404920406446951"));
-            memcpy(this->webSocketURL, "ws://emedge.pulseenergy.io/ws/OCPP16J/1000/CPK8IR6MV6", strlen("ws://emedge.pulseenergy.io/ws/OCPP16J/1000/CPK8IR6MV6"));
-            memcpy(this->firmwareVersion, "1.0", strlen("1.0"));
+            memcpy(this->webSocketURL, "ws://evre.pulseenergy.io/ws/OCPP16J/1000/CPK8IR6MV6", strlen("ws://evre.pulseenergy.io/ws/OCPP16J/1000/CPK8IR6MV6"));
+            const esp_partition_t *running_partition = esp_ota_get_running_partition();
+            esp_app_desc_t running_partition_description;
+            esp_ota_get_partition_description(running_partition, &running_partition_description);
+            memcpy(this->firmwareVersion, running_partition_description.version, strlen(running_partition_description.version));
             memcpy(this->slavefirmwareVersion, "1.0", strlen("1.0"));
             memcpy(this->adminpassword, "root", strlen("root"));
             memcpy(this->factorypassword, "root", strlen("root"));
@@ -122,44 +131,44 @@ namespace ConfigModule
             memset(&this->macAddressofAlprDevice, 0, sizeof(this->macAddressofAlprDevice));
             memset(&this->serverSetCpDuty, 0, sizeof(this->serverSetCpDuty));
             this->NumberOfConnectors = NUM_OF_CONNECTORS;
-            this->NumberOfDisplays = 1 ;
+            this->NumberOfDisplays = 1;
 
-            for(uint8_t i = 0; i < MAX_NUM_OF_SUBSETS; i++)
+            for (uint8_t i = 0; i < MAX_NUM_OF_SUBSETS; i++)
             {
                 for (size_t j = 0; j < 3; j++)
                 {
-                this->SubSetRelay[i][j] = true;
+                    this->SubSetRelay[i][j] = true;
                 }
             }
 
-            //memset(this->ByteMacAddress, 0, sizeof(this->ByteMacAddress));
+            // memset(this->ByteMacAddress, 0, sizeof(this->ByteMacAddress));
             for (size_t i = 0; i < 6; i++)
             {
                 this->ByteMacAddress[i] = 00;
             }
 
-            for(uint8_t i = 0; i < MAX_NUM_OF_SUBSETS; i++)
+            for (uint8_t i = 0; i < MAX_NUM_OF_SUBSETS; i++)
             {
                 this->NumberOfSubSets[i].NumberOfConnectors = 2;
-                for(uint8_t j = 0; j < 4; j++)
+                for (uint8_t j = 0; j < 4; j++)
                 {
-                for (uint8_t k = 0; k < 2; k++)
-                {
-                    this->NumberOfSubSets[i].PowerModule[j][k].isActive = false;
-                    this->NumberOfSubSets[i].PowerModule[j][k].moduleAddress = ((i*8)+(j*2)+k) + 1;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxVoltage = 1000;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxCurrent = 120;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinVoltage = 50;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinCurrent = 0.5;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxPower = 30;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinPower = 0.025f;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxTemperature = 75;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinTemperature = -30;
-                }
+                    for (uint8_t k = 0; k < 2; k++)
+                    {
+                        this->NumberOfSubSets[i].PowerModule[j][k].isAvailable = false;
+                        this->NumberOfSubSets[i].PowerModule[j][k].moduleAddress = ((i * 8) + (j * 2) + k) + 1;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxVoltage = 1000;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxCurrent = 120;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinVoltage = 50;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinCurrent = 0.5;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxPower = 30;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinPower = 0.025f;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxTemperature = 75;
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinTemperature = -30;
+                    }
                 }
             }
-
         }
+        printConfigParameters();
     }
 
     // Destructor
@@ -420,7 +429,7 @@ namespace ConfigModule
         {
             cJSON_Delete(json);
             return ESP_FAIL;
-        }            
+        }
 
         if (!cJSON_AddBoolToObject(json, "restoreSessionFromFault", restoreSessionFromFault))
         {
@@ -446,13 +455,13 @@ namespace ConfigModule
             return ESP_FAIL;
         }
 
-        if(!cJSON_AddNumberToObject(json, "NumberOfDisplay", (int)NumberOfDisplays))
+        if (!cJSON_AddNumberToObject(json, "NumberOfDisplay", (int)NumberOfDisplays))
         {
             cJSON_Delete(json);
             return ESP_FAIL;
         }
 
-        if(!cJSON_AddNumberToObject(json, "NumberOfConnectors", (int)NumberOfConnectors))
+        if (!cJSON_AddNumberToObject(json, "NumberOfConnectors", (int)NumberOfConnectors))
         {
             cJSON_Delete(json);
             return ESP_FAIL;
@@ -511,7 +520,7 @@ namespace ConfigModule
         }
 
         cJSON *dcOverCurrentArray = cJSON_AddArrayToObject(json, "DCoverCurrentThreshold");
-        for (int i = 0; i < MAX_NUM_OF_CONNECTORS + 1 ; i++)
+        for (int i = 0; i < MAX_NUM_OF_CONNECTORS + 1; i++)
         {
             cJSON_AddItemToArray(dcOverCurrentArray, cJSON_CreateNumber(DCoverCurrentThreshold[i]));
         }
@@ -574,7 +583,7 @@ namespace ConfigModule
         {
             cJSON_Delete(json);
             return ESP_FAIL;
-        }           
+        }
 
         if (!cJSON_AddNumberToObject(json, "NumOfAlprDevices", NumOfAlprDevices))
         {
@@ -597,7 +606,7 @@ namespace ConfigModule
         for (int i = 0; i < 4; i++)
         {
             cJSON_AddItemToArray(serverCpDutyArray, cJSON_CreateNumber(serverSetCpDuty[i]));
-        }            
+        }
 
         // NumberOfSubsets - start
         cJSON *subsetsArray = cJSON_AddArrayToObject(json, "NumberOfSubSets");
@@ -636,100 +645,102 @@ namespace ConfigModule
                 cJSON *moduleRow = cJSON_CreateArray();
                 if (moduleRow == NULL)
                 {
-                cJSON_Delete(json);
-                return ESP_FAIL;
+                    cJSON_Delete(json);
+                    return ESP_FAIL;
                 }
 
                 cJSON_AddItemToArray(powerModuleArray, moduleRow);
 
                 for (int k = 0; k < 2; k++)
                 {
-                cJSON *moduleObj = cJSON_CreateObject();
-                if (moduleObj == NULL)
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    cJSON *moduleObj = cJSON_CreateObject();
+                    if (moduleObj == NULL)
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                cJSON_AddItemToArray(moduleRow, moduleObj);
+                    cJSON_AddItemToArray(moduleRow, moduleObj);
 
-                PowerModuleConfig &pm = NumberOfSubSets[i].PowerModule[j][k];
+                    PowerModuleConfig &pm = NumberOfSubSets[i].PowerModule[j][k];
 
-                if (!cJSON_AddBoolToObject(moduleObj, "isActive", pm.isActive))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddBoolToObject(moduleObj, "isActive", pm.isAvailable))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "moduleAddress", pm.moduleAddress))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "moduleAddress", pm.moduleAddress))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MaxVoltage", pm.MaxVoltage))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MaxVoltage", pm.MaxVoltage))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MaxCurrent", pm.MaxCurrent))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MaxCurrent", pm.MaxCurrent))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MinVoltage", pm.MinVoltage))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MinVoltage", pm.MinVoltage))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MinCurrent", pm.MinCurrent))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MinCurrent", pm.MinCurrent))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MaxPower", pm.MaxPower))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MaxPower", pm.MaxPower))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MinPower", pm.MinPower))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MinPower", pm.MinPower))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MaxTemperature", pm.MaxTemperature))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MaxTemperature", pm.MaxTemperature))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
 
-                if (!cJSON_AddNumberToObject(moduleObj, "MinTemperature", pm.MinTemperature))
-                {
-                    cJSON_Delete(json);
-                    return ESP_FAIL;
-                }
+                    if (!cJSON_AddNumberToObject(moduleObj, "MinTemperature", pm.MinTemperature))
+                    {
+                        cJSON_Delete(json);
+                        return ESP_FAIL;
+                    }
                 }
             }
         }
 
         char *jsonString = cJSON_PrintUnformatted(json);
-        //print
-        ESP_LOGI("TEST - CONFIG", "JSON: %s", jsonString);
-
         cJSON_Delete(json);
 
-        storage->WriteConfigData(jsonString);
-
         if (jsonString == NULL)
+        {
             return ESP_FAIL;
+        }
 
-        return ESP_OK;
+        ESP_LOGI(TAG, "WRITING CONFIG JSON: %s", jsonString); // TODO : Remove later
+
+        esp_err_t err = storage->WriteConfigData(jsonString);
+        free(jsonString);
+
+        return err;
     }
 
     esp_err_t Configuration::ReadConfigurationFromFlash(void)
@@ -743,16 +754,16 @@ namespace ConfigModule
             return err;
         }
 
-        //TODO :remove later
-        ESP_LOGI(TAG, "READ :: Config JSON string: %s", configData);
+        // TODO :remove later
+        ESP_LOGD(TAG, "READ :: Config JSON string: %s", configData);
 
         cJSON *json = cJSON_Parse(configData);
         free(configData);
         configData = NULL;
-        
+
         if (json == NULL)
         {
-            ESP_LOGI(TAG," Invalid config loaded from Flash");
+            ESP_LOGE(TAG, " Invalid config loaded from Flash");
             return ESP_FAIL;
         }
 
@@ -818,24 +829,24 @@ namespace ConfigModule
             {
                 cJSON *row = cJSON_GetArrayItem(pmArray, j);
                 if (row == NULL)
-                continue;
+                    continue;
 
                 for (int k = 0; k < 2; k++)
                 {
-                cJSON *pm = cJSON_GetArrayItem(row, k);
-                if (pm == NULL)
-                    continue;
+                    cJSON *pm = cJSON_GetArrayItem(row, k);
+                    if (pm == NULL)
+                        continue;
 
-                this->NumberOfSubSets[i].PowerModule[j][k].isActive = cJSON_GetObjectItem(pm, "isActive")->valueint;
-                this->NumberOfSubSets[i].PowerModule[j][k].moduleAddress = cJSON_GetObjectItem(pm, "moduleAddress")->valueint;
-                this->NumberOfSubSets[i].PowerModule[j][k].MaxVoltage = cJSON_GetObjectItem(pm, "MaxVoltage")->valuedouble;
-                this->NumberOfSubSets[i].PowerModule[j][k].MaxCurrent = cJSON_GetObjectItem(pm, "MaxCurrent")->valuedouble;
-                this->NumberOfSubSets[i].PowerModule[j][k].MinVoltage = cJSON_GetObjectItem(pm, "MinVoltage")->valuedouble;
-                this->NumberOfSubSets[i].PowerModule[j][k].MinCurrent = cJSON_GetObjectItem(pm, "MinCurrent")->valuedouble;
-                this->NumberOfSubSets[i].PowerModule[j][k].MaxPower = cJSON_GetObjectItem(pm, "MaxPower")->valuedouble;
-                this->NumberOfSubSets[i].PowerModule[j][k].MinPower = cJSON_GetObjectItem(pm, "MinPower")->valuedouble;
-                this->NumberOfSubSets[i].PowerModule[j][k].MaxTemperature = cJSON_GetObjectItem(pm, "MaxTemperature")->valuedouble;
-                this->NumberOfSubSets[i].PowerModule[j][k].MinTemperature = cJSON_GetObjectItem(pm, "MinTemperature")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].isAvailable = cJSON_GetObjectItem(pm, "isAvailable")->valueint;
+                    this->NumberOfSubSets[i].PowerModule[j][k].moduleAddress = cJSON_GetObjectItem(pm, "moduleAddress")->valueint;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MaxVoltage = cJSON_GetObjectItem(pm, "MaxVoltage")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MaxCurrent = cJSON_GetObjectItem(pm, "MaxCurrent")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MinVoltage = cJSON_GetObjectItem(pm, "MinVoltage")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MinCurrent = cJSON_GetObjectItem(pm, "MinCurrent")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MaxPower = cJSON_GetObjectItem(pm, "MaxPower")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MinPower = cJSON_GetObjectItem(pm, "MinPower")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MaxTemperature = cJSON_GetObjectItem(pm, "MaxTemperature")->valuedouble;
+                    this->NumberOfSubSets[i].PowerModule[j][k].MinTemperature = cJSON_GetObjectItem(pm, "MinTemperature")->valuedouble;
                 }
             }
         }
@@ -917,4 +928,224 @@ namespace ConfigModule
         return ESP_OK;
     }
 
+    void Configuration::printConfigParameters()
+    {
+        ESP_LOGI(TAG, "========================================");
+        ESP_LOGI(TAG, "     CONFIGURATION PARAMETERS");
+        ESP_LOGI(TAG, "========================================");
+
+        ESP_LOGI(TAG, "---------- CHARGER INFO ----------");
+        ESP_LOGI(TAG, "Serial Number               : %s", this->serialNumber);
+        ESP_LOGI(TAG, "Charger Name                : %s", this->chargerName);
+        ESP_LOGI(TAG, "Charge Point Vendor         : %s", this->chargePointVendor);
+        ESP_LOGI(TAG, "Charge Point Model          : %s", this->chargePointModel);
+        ESP_LOGI(TAG, "Commissioned By             : %s", this->commissionedBy);
+        ESP_LOGI(TAG, "Commissioned Date           : %s", this->commissionedDate);
+        ESP_LOGI(TAG, "Firmware Version            : %s", this->firmwareVersion);
+        ESP_LOGI(TAG, "Slave Firmware Version      : %s", this->slavefirmwareVersion);
+
+        ESP_LOGD(TAG, "---------- PASSWORDS ----------");
+        ESP_LOGD(TAG, "Admin Password              : %s", this->adminpassword);
+        ESP_LOGD(TAG, "Factory Password            : %s", this->factorypassword);
+        ESP_LOGD(TAG, "Service Password            : %s", this->servicepassword);
+        ESP_LOGD(TAG, "Customer Password           : %s", this->customerpassword);
+
+        ESP_LOGI(TAG, "---------- NETWORK ----------");
+        ESP_LOGI(TAG, "WiFi Enable                 : %s", this->wifiEnable ? "true" : "false");
+        if (this->wifiEnable)
+        {
+            ESP_LOGI(TAG, "WiFi SSID                   : %s", this->wifiSSID);
+            ESP_LOGI(TAG, "WiFi Password               : %s", this->wifiPassword);
+        }
+        else
+        {
+            ESP_LOGD(TAG, "WiFi SSID                   : %s", this->wifiSSID);
+            ESP_LOGD(TAG, "WiFi Password               : %s", this->wifiPassword);
+        }
+
+        ESP_LOGI(TAG, "GSM Enable                  : %s", this->gsmEnable ? "true" : "false");
+        if (this->gsmEnable)
+        {
+            ESP_LOGI(TAG, "GSM APN                     : %s", this->gsmAPN);
+        }
+        else
+        {
+            ESP_LOGD(TAG, "GSM APN                     : %s", this->gsmAPN);
+        }
+
+        ESP_LOGI(TAG, "Ethernet Enable             : %s", this->ethernetEnable ? "true" : "false");
+        if (this->ethernetEnable)
+        {
+            ESP_LOGI(TAG, "Ethernet Priority      : %d", this->ethernetPriority);
+            ESP_LOGI(TAG, "Ethernet Config Type   : % s", GetEthernetConfigTypeString(this->ethernetConfig));
+        }
+        else
+        {
+            ESP_LOGD(TAG, "Ethernet Priyority      : %d", this->ethernetPriority);
+            ESP_LOGD(TAG, "Ethernet Config Type   : % s", GetEthernetConfigTypeString(this->ethernetConfig));
+        }
+
+        ESP_LOGI(TAG, "IP Address                  : %s", this->ipAddress);
+        ESP_LOGI(TAG, "Gateway Address             : %s", this->gatewayAddress);
+        ESP_LOGI(TAG, "DNS Address                 : %s", this->dnsAddress);
+        ESP_LOGI(TAG, "Subnet Mask                 : %s", this->subnetMask);
+        ESP_LOGI(TAG, "MAC Address                 : %s", this->macAddress);
+
+        ESP_LOGI(TAG, "---------- CHARGER CONFIG ----------");
+        ESP_LOGI(TAG, "Charger Type                : %s", GetChargerTypeString(this->chargerType));
+        ESP_LOGI(TAG, "Charger Model               : %s", GetChargerModelString(this->chargerModel));
+        ESP_LOGI(TAG, "Board Model                 : %s", GetBoardModelString(this->boardModel));
+        ESP_LOGI(TAG, "Charging Mode               : %s", GetChargingModeString(this->chargingMode));
+        ESP_LOGI(TAG, "Network Mode                : %s", GetNetworkModeString(this->networkMode));
+        ESP_LOGI(TAG, "Number Of Connectors        : %d", this->NumberOfConnectors);
+        ESP_LOGI(TAG, "Number Of Displays          : %d", this->NumberOfDisplays);
+
+        ESP_LOGI(TAG, "---------- POWER SETTINGS ----------");
+        ESP_LOGI(TAG, "Current Gain                : %.2f", this->CurrentGain);
+        ESP_LOGI(TAG, "Current Offset              : %.2f", this->CurrentOffset);
+        ESP_LOGI(TAG, "Current Gain1               : %.2f", this->CurrentGain1);
+        ESP_LOGI(TAG, "Current Gain2               : %.2f", this->CurrentGain2);
+
+        ESP_LOGI(TAG, "DC Over Voltage Threshold   : %.2f", this->DCoverVoltageThreshold);
+        ESP_LOGI(TAG, "AC Over Voltage Threshold   : %.2f", this->ACoverVoltageThreshold);
+        ESP_LOGI(TAG, "DC Under Voltage Threshold  : %.2f", this->DCunderVoltageThreshold);
+        ESP_LOGI(TAG, "AC Under Voltage Threshold  : %.2f", this->ACunderVoltageThreshold);
+        ESP_LOGI(TAG, "Over Temperature Threshold  : %.2f", this->overTemperatureThreshold);
+
+        ESP_LOGI(TAG, "---------- FEATURES ----------");
+        ESP_LOGI(TAG, "Smart Charging              : %s", this->smartCharging ? "true" : "false");
+        ESP_LOGI(TAG, "Battery Backup              : %s", this->BatteryBackup ? "true" : "false");
+        ESP_LOGI(TAG, "Diagnostic Server           : %s", this->DiagnosticServer ? "true" : "false");
+        if (this->DiagnosticServer)
+        {
+            ESP_LOGI(TAG, "Diagnostic Server URL       : %s", this->DiagnosticServerUrl);
+        }
+        else
+        {
+            ESP_LOGD(TAG, "Diagnostic Server URL       : %s", this->DiagnosticServerUrl);
+        }
+
+        ESP_LOGI(TAG, "Resume After Power Loss     : %s", this->ResumeSessionAfterPowerLoss ? "true" : "false");
+        ESP_LOGI(TAG, "Restore Session From Fault  : %s", this->restoreSessionFromFault ? "true" : "false");
+
+        ESP_LOGI(TAG, "ALPR Enable                 : %s", this->ALPREnable ? "true" : "false");
+        if (this->ALPREnable)
+        {
+            ESP_LOGI(TAG, "Number Of ALPR Devices      : %d", this->NumOfAlprDevices);
+        }
+        else
+        {
+            ESP_LOGD(TAG, "Number Of ALPR Devices      : %d", this->NumOfAlprDevices);
+        }
+
+        ESP_LOGI(TAG, "---------- OCPP / OTA ----------");
+        ESP_LOGI(TAG, "WebSocket URL               : %s", this->webSocketURL);
+        ESP_LOGI(TAG, "OTA URL From CMS Enable     : %s", this->OtaUrlFromCMSEnable ? "true" : "false");
+        if (this->OtaUrlFromCMSEnable)
+        {
+            ESP_LOGI(TAG, "OTA URL Config              : %s", this->OtaURLConfig);
+        }
+        else
+        {
+            ESP_LOGD(TAG, "OTA URL Config              : %s", this->OtaURLConfig);
+        }
+
+        ESP_LOGI(TAG, "========================================");
+    }
+
+    const char *Configuration::GetChargerTypeString(ChargerType chargerType)
+    {
+        switch (chargerType)
+        {
+        case ConfigModule::ChargerType::STANDALONE:
+            return "STANDALONE";
+        case ConfigModule::ChargerType::DISPENSER:
+            return "DISPENSER";
+        case ConfigModule::ChargerType::STACK:
+            return "STACK";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
+    const char *Configuration::GetChargerModelString(ChargerModel chargerModel)
+    {
+        switch (chargerModel)
+        {
+        case ConfigModule::ChargerModel::DC30S:
+            return "DC30s";
+        case ConfigModule::ChargerModel::DC60S:
+            return "DC60S";
+        case ConfigModule::ChargerModel::DC120S:
+            return "DC120S";
+        case ConfigModule::ChargerModel::DC180S:
+            return "DC180S";
+        case ConfigModule::ChargerModel::DC240S:
+            return "DC240S";
+        case ConfigModule::ChargerModel::DC60D:
+            return "DC60D";
+        case ConfigModule::ChargerModel::DC120D:
+            return "DC120D";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
+    const char *Configuration::GetBoardModelString(BoardModel boardModel)
+    {
+        switch (boardModel)
+        {
+        case ConfigModule::BoardModel::DC1:
+            return "DC1";
+        case ConfigModule::BoardModel::DC2:
+            return "DC2";
+        case ConfigModule::BoardModel::DC3:
+            return "DC3";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
+    const char *Configuration::GetEthernetConfigTypeString(EthernetConfigType ethernetConfigType)
+    {
+        switch (ethernetConfigType)
+        {
+        case ConfigModule::EthernetConfigType::STATIC:
+            return "STATIC";
+        case ConfigModule::EthernetConfigType::DHCP:
+            return "DHCP";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
+    const char *Configuration::GetNetworkModeString(NetworkMode networkMode)
+    {
+        switch (networkMode)
+        {
+        case ConfigModule::NetworkMode::ONLINE:
+            return "ONLINE";
+        case ConfigModule::NetworkMode::OFFLINE:
+            return "OFFLINE";
+        case ConfigModule::NetworkMode::ONLINE_OFFLINE:
+            return "ONLINE_OFFLINE";
+        case ConfigModule::NetworkMode::PLUGNPLAY:
+            return "PLUGNPLAY";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
+    const char *Configuration::GetChargingModeString(ChargingMode chargingMode)
+    {
+        switch (chargingMode)
+        {
+        case ConfigModule::ChargingMode::DC:
+            return "DC";
+        case ConfigModule::ChargingMode::DC_AC:
+            return "DC_AC";
+        default:
+            return "UNKNOWN";
+        }
+    }
 }

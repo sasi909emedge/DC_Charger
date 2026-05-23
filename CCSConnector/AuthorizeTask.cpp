@@ -8,6 +8,7 @@ namespace CCSConnector
 {
     void CCSConnectorController::AuthorizeTask(void *pvParameters)
     {
+        vTaskDelay(pdMS_TO_TICKS(100)); // Example delay
         CCSConnectorController *connector = static_cast<CCSConnectorController *>(pvParameters);
         uint32_t RfidSentTimeout = 0;
         uint32_t RfidAuthTimeout = 0;

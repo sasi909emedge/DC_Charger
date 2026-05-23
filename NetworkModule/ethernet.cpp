@@ -15,6 +15,11 @@
 #include "NetworkModule.hpp"
 #include "ConfigModule.hpp"
 #include <cstring>
+#include "driver/spi_master.h"
+#include "esp_eth_mac_spi.h"
+#include "esp_eth_phy_w5500.h"
+#include "esp_eth_mac_w5500.h"
+// #include "esp_eth_phy_802_3.h"
 
 #define TAG "ETH"
 
@@ -121,24 +126,23 @@ namespace NetworkModule
         }
         ESP_LOGI(TAG, "~~~~~~~~~~~");
     }
-
+    //   to check spi if build ok if not remove
     void ethernet_initialise(int priority)
     {
-        spi_bus_config_t buscfg = {
-            .mosi_io_num = ETH_MOSI_PIN,
-            .miso_io_num = ETH_MISO_PIN,
-            .sclk_io_num = ETH_SCLK_PIN,
-            .quadwp_io_num = -1,
-            .quadhd_io_num = -1,
-        };
+        spi_bus_config_t buscfg = {};
+        buscfg.mosi_io_num = ETH_MOSI_PIN;
+        buscfg.miso_io_num = ETH_MISO_PIN;
+        buscfg.sclk_io_num = ETH_SCLK_PIN;
+        buscfg.quadwp_io_num = -1;
+        buscfg.quadhd_io_num = -1;
+        buscfg.max_transfer_sz = 4096;
         spi_bus_initialize(ETH_SPI_HOST, &buscfg, SPI_DMA_CH_AUTO);
 
-        spi_device_interface_config_t spi_devcfg = {
-            .mode = 0,
-            .clock_speed_hz = 10000000,
-            .spics_io_num = ETH_CS_PIN,
-            .queue_size = 20,
-        };
+        spi_device_interface_config_t spi_devcfg = {};
+        spi_devcfg.mode = 0;
+        spi_devcfg.clock_speed_hz = 10000000;
+        spi_devcfg.spics_io_num = ETH_CS_PIN;
+        spi_devcfg.queue_size = 20;
 
         // Init common MAC and PHY configs to default
         eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();

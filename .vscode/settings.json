@@ -1,11 +1,5 @@
 {
   "idf.currentSetup": "C:\\esp\\v6.0.1\\esp-idf",
   "idf.portWin": "COM5",
-  "idf.customExtraVars": {},
-  "clangd.path": "C:\\Espressif\\tools\\esp-clang\\esp-19.1.2_20250312\\esp-clang\\bin\\clangd.exe",
-  "clangd.arguments": [
-    "--background-index",
-    "--query-driver=**",
-    "--compile-commands-dir=c:\\DevProjects\\DC_Charger\\build"
-  ]
+  "idf.flashType": "UART"
 }

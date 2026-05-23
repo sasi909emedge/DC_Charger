@@ -10,7 +10,7 @@
 #define INC_CCS_CONNECTOR_H_
 
 #include <cstdint>
-#include <cstdbool>
+// #include <cstdbool>
 #include <vector>
 #include <array>
 #include <string>
@@ -62,7 +62,8 @@ namespace CCSConnector
         uint64_t ConnectorId : 8;
         uint64_t EVSEMaxCurrent : 16;
         uint64_t EVSEMaxVoltage : 16;
-        uint64_t Spare : 24;
+        uint64_t isParameterStateFinished : 1;
+        uint64_t Spare : 23;
     };
 
     struct EVMAX
@@ -170,6 +171,7 @@ namespace CCSConnector
         bool CmsAvailableChanged;
         bool UnkownId;
         bool InvalidId;
+        bool isParameterStateFinished;
 
         PLCModule::ControlPilotState controlPilotState;
         PLCModule::StateMachineState stateMachineState;
@@ -215,7 +217,6 @@ namespace CCSConnector
         bool isWebsocketConnected;
         bool isWebsocketConnected_old;
         bool ClockAlignedDataTime[NUM_OF_CONNECTORS];
-        bool isPowerModuleAssigned;
 
         bool emergency;
         bool earthDisconnect;
@@ -288,7 +289,7 @@ namespace CCSConnector
         esp_err_t read_connectors_offline_data(uint8_t ConnID);
         esp_err_t write_connectors_offline_data(uint8_t ConnID);
 
-        void encodeAndSendStatusNotification(uint8_t connId, char *errorCode, char *status, char *info, uint8_t trigger);
+        void encodeAndSendStatusNotification(uint8_t connId, const char *errorCode, const char *status, const char *info, uint8_t trigger);
         void sendStatusNotificationRequest(uint8_t ConnID, std::string errorCode, std::string status, std::string vendorErrorCode);
         CCSConnector::ModuleStatus GetModuleStatus(uint8_t ConnId);
         void SetModuleStatusToSNA(uint8_t ConnID);
@@ -311,7 +312,6 @@ namespace CCSConnector
     private:
         SendDataFunc sendFunc;
         void PrintConnectorModuleStatusParameters(uint8_t ConnID);
-        void PrintConnectorParameters();
         // ReceiveDataFunc receiveFunc;
     };
 

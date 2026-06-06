@@ -1,0 +1,1553 @@
+Command: C:\Espressif\tools\python\v6.0.1\venv\Scripts\python.exe C:\esp\v6.0.1\esp-idf\tools/idf_monitor.py -p COM7 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 C:\DevProjects\DC_Charger\build\DC_Charger.elf C:\DevProjects\DC_Charger\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v6.0.1\venv\Scripts\python.exe' 'C:\esp\v6.0.1\esp-idf\tools\idf.py'
+ets �ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0040,len:6272
+load:0x40078000,len:15848
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (27) boot: ESP-IDF v6.0.1 2nd stage bootloader[0m
+[0;32mI (27) boot: compile time May 28 2026 15:35:57[0m
+[0;32mI (28) boot: Multicore bootloader[0m
+[0;32mI (29) boot: chip revision: v3.1[0m
+[0;32mI (32) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (35) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (39) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (42) boot: Enabling RNG early entropy source...[0m
+[0;32mI (47) boot: Partition Table:[0m
+[0;32mI (49) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (56) boot:  0 nvs              WiFi data        01 02 00009000 00005000[0m
+[0;32mI (62) boot:  1 otadata          OTA data         01 00 0000e000 00002000[0m
+[0;32mI (69) boot:  2 phy_init         RF data          01 01 00010000 00001000[0m
+[0;32mI (75) boot:  3 factory          factory app      00 00 00020000 002d0000[0m
+[0;32mI (82) boot:  4 spiffs           Unknown data     01 82 002f0000 000d0000[0m
+[0;32mI (88) boot: End of partition table[0m
+[0;32mI (92) boot: Defaulting to factory image[0m
+[0;32mI (95) esp_image: segment 0: paddr=00020020 vaddr=3f400020 size=2f758h (194392) map[0m
+[0;32mI (172) esp_image: segment 1: paddr=0004f780 vaddr=3ffb0000 size=00898h (  2200) load[0m
+[0;32mI (173) esp_image: segment 2: paddr=00050020 vaddr=400d0020 size=e03e0h (918496) map[0m
+[0;32mI (503) esp_image: segment 3: paddr=00130408 vaddr=3ffb0898 size=03ed8h ( 16088) load[0m
+[0;32mI (510) esp_image: segment 4: paddr=001342e8 vaddr=40080000 size=187a0h (100256) load[0m
+[0;32mI (551) esp_image: segment 5: paddr=0014ca90 vaddr=50000000 size=00028h (    40) load[0m
+[0;32mI (563) boot: Loaded app from partition at offset 0x20000[0m
+[0;32mI (563) boot: Disabling RNG early entropy source...[0m
+[0;32mI (574) cpu_start: Multicore app[0m
+[0;32mI (582) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (582) cpu_start: Pro cpu start user code[0m
+[0;32mI (582) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (584) app_init: Application information:[0m
+[0;32mI (588) app_init: Project name:     DC_Charger[0m
+[0;32mI (592) app_init: App version:      0120c85-dirty[0m
+[0;32mI (597) app_init: Compile time:     May 28 2026 15:24:59[0m
+[0;32mI (602) app_init: ELF file SHA256:  9cd819316...[0m
+[0;32mI (606) app_init: ESP-IDF:          v6.0.1[0m
+[0;32mI (610) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (614) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (618) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (622) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (628) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (633) heap_init: At 3FFB93B8 len 00026C48 (155 KiB): DRAM[0m
+[0;32mI (638) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (643) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (649) heap_init: At 400987A0 len 00007860 (30 KiB): IRAM[0m
+[0;32mI (656) spi_flash: detected chip: generic[0m
+[0;32mI (658) spi_flash: flash io: dio[0m
+[0;32mI (663) main_task: Started on CPU0[0m
+[0;32mI (673) main_task: Calling app_main()[0m
+[1;31mE (673) TEST: I AM RUNNING NEW FIRMWARE[0m
+[1;31mE (683) TWAI: ENTERED InitTWAI()[0m
+[0;32mI (683) TWAI: Driver installed[0m
+[0;32mI (683) TWAI: Driver started[0m
+[0;32mI (683) TWAI: TEST FRAME SENT[0m
+[1;31mE (3683) TWAI: TX_ERR=128 RX_ERR=0 TX_FAILED=1 BUS_ERR=29 STATE=2[0m
+[0;32mI (3683) TWAI: Waiting for CAN frame...[0m
+[0;33mW (3823) CONFIG: Failed to load configuration from flash, using default values[0m
+[0;32mI (3823) CONFIG: ========================================[0m
+[0;32mI (3823) CONFIG:      CONFIGURATION PARAMETERS[0m
+[0;32mI (3823) CONFIG: ========================================[0m
+[0;32mI (3833) CONFIG: ---------- CHARGER INFO ----------[0m
+[0;32mI (3833) CONFIG: Serial Number               : Amplify[0m
+[0;32mI (3843) CONFIG: Charger Name                : Amplify[0m
+[0;32mI (3843) CONFIG: Charge Point Vendor         : EMEDGE[0m
+[0;32mI (3853) CONFIG: Charge Point Model          : HALO[0m
+[0;32mI (3853) CONFIG: Commissioned By             : Kishore[0m
+[0;32mI (3863) CONFIG: Commissioned Date           : 2025-06-02[0m
+[0;32mI (3863) CONFIG: Firmware Version            : 0120c85-dirty[0m
+[0;32mI (3873) CONFIG: Slave Firmware Version      : 1.0[0m
+[0;32mI (3873) CONFIG: ---------- NETWORK ----------[0m
+[0;32mI (3883) CONFIG: WiFi Enable                 : true[0m
+[0;32mI (3883) CONFIG: WiFi SSID                   : EMEDGE[0m
+[0;32mI (3883) CONFIG: WiFi Password               : 9490848535[0m
+[0;32mI (3893) CONFIG: GSM Enable                  : false[0m
+[0;32mI (3893) CONFIG: Ethernet Enable             : false[0m
+[0;32mI (3903) CONFIG: IP Address                  : 192.168.0.1[0m
+[0;32mI (3903) CONFIG: Gateway Address             : 192.168.0.1[0m
+[0;32mI (3913) CONFIG: DNS Address                 : 8.8.8.8[0m
+[0;32mI (3913) CONFIG: Subnet Mask                 : 255.255.255.0[0m
+[0;32mI (3923) CONFIG: MAC Address                 : 10:97:bd:22:7e:00[0m
+[0;32mI (3933) CONFIG: ---------- CHARGER CONFIG ----------[0m
+[0;32mI (3933) CONFIG: Charger Type                : STANDALONE[0m
+[0;32mI (3943) CONFIG: Charger Model               : DC30s[0m
+[0;32mI (3943) CONFIG: Board Model                 : UNKNOWN[0m
+[0;32mI (3953) CONFIG: Charging Mode               : DC[0m
+[0;32mI (3953) CONFIG: Network Mode                : ONLINE_OFFLINE[0m
+[0;32mI (3963) CONFIG: Number Of Connectors        : 2[0m
+[0;32mI (3963) CONFIG: Number Of Displays          : 1[0m
+[0;32mI (3963) CONFIG: ---------- POWER SETTINGS ----------[0m
+[0;32mI (3973) CONFIG: Current Gain                : 1.00[0m
+[0;32mI (3973) CONFIG: Current Offset              : 0.00[0m
+[0;32mI (3983) CONFIG: Current Gain1               : 1.00[0m
+[0;32mI (3983) CONFIG: Current Gain2               : 1.00[0m
+[0;32mI (3993) CONFIG: DC Over Voltage Threshold   : 500.00[0m
+[0;32mI (3993) CONFIG: AC Over Voltage Threshold   : 250.00[0m
+[0;32mI (4003) CONFIG: DC Under Voltage Threshold  : 200.00[0m
+[0;32mI (4003) CONFIG: AC Under Voltage Threshold  : 100.00[0m
+[0;32mI (4013) CONFIG: Over Temperature Threshold  : 60.00[0m
+[0;32mI (4013) CONFIG: ---------- FEATURES ----------[0m
+[0;32mI (4013) CONFIG: Smart Charging              : false[0m
+[0;32mI (4023) CONFIG: Battery Backup              : false[0m
+[0;32mI (4023) CONFIG: Diagnostic Server           : false[0m
+[0;32mI (4033) CONFIG: Resume After Power Loss     : true[0m
+[0;32mI (4033) CONFIG: Restore Session From Fault  : true[0m
+[0;32mI (4043) CONFIG: ALPR Enable                 : false[0m
+[0;32mI (4043) CONFIG: ---------- OCPP / OTA ----------[0m
+[0;32mI (4053) CONFIG: WebSocket URL               : ws://evre.pulseenergy.io/ws/OCPP16J/1000/CPK8IR6MV6[0m
+[0;32mI (4063) CONFIG: OTA URL From CMS Enable     : false[0m
+[0;32mI (4063) CONFIG: ========================================[0m
+[1;31mE (4073) gpio: io_num=38 can only be input[0m
+[1;31mE (4073) gpio: gpio_set_level(250): GPIO output gpio_num error[0m
+[1;31mE (4083) gpio: gpio_set_direction(320): GPIO number error[0m
+[1;31mE (4083) gpio: gpio_pulldown_dis(145): GPIO number error[0m
+[1;31mE (4093) gpio: gpio_pullup_dis(107): GPIO number error[0m
+[1;31mE (4093) gpio: gpio_set_direction(320): GPIO number error[0m
+[1;31mE (4103) gpio: gpio_pulldown_dis(145): GPIO number error[0m
+[1;31mE (4103) gpio: gpio_pullup_dis(107): GPIO number error[0m
+[0;32mI (4113) PLC: Conn 0 | controlPilotDuty = 127[0m
+[0;32mI (4113) PLC: Conn 0 | controlPilotState = 15[0m
+[0;32mI (4113) PLC: Conn 0 | stateMachineState = 15[0m
+[0;32mI (4123) PLC: Conn 0 | actualChargeProtocol = 15[0m
+[0;32mI (4123) PLC: Conn 0 | tcpStatus = 3[0m
+[0;32mI (4133) PLC: Conn 0 | pilotStatesStatus = 15[0m
+[0;32mI (4133) PLC: Conn 0 | slacStatus = 15[0m
+[0;32mI (4133) PLC: Conn 0 | proximityPilotVoltage = 4095[0m
+[0;32mI (4143) PLC: Conn 0 | controlPilotVoltage = 16383[0m
+[0;32mI (4143) PLC: Conn 0 | evTargetCurrent = 6553.5A[0m
+[0;32mI (4153) PLC: Conn 0 | evTargetVoltage = 6553.5V[0m
+[0;32mI (4153) PLC: Conn 0 | evSoC = 255%[0m
+[0;32mI (4153) PLC: Conn 0 | evErrorCode = 15[0m
+[0;32mI (4163) PLC: Conn 0 | evReady = 3[0m
+[0;32mI (4163) PLC: Conn 0 | evsePresentCurrent = 6553.5A[0m
+[0;32mI (4163) PLC: Conn 0 | evsePresentVoltage = 6553.5V[0m
+[0;32mI (4173) PLC: Conn 0 | evseIsolationStatus = 7[0m
+[0;32mI (4173) PLC: Conn 0 | evseStatusCode = 12[0m
+[0;32mI (4183) PLC: Conn 1 | controlPilotDuty = 127[0m
+[0;32mI (4183) PLC: Conn 1 | controlPilotState = 15[0m
+[0;32mI (4193) PLC: Conn 1 | stateMachineState = 15[0m
+[0;32mI (4193) PLC: Conn 1 | actualChargeProtocol = 15[0m
+[0;32mI (4193) PLC: Conn 1 | tcpStatus = 3[0m
+[0;32mI (4203) PLC: Conn 1 | pilotStatesStatus = 15[0m
+[0;32mI (4203) PLC: Conn 1 | slacStatus = 15[0m
+[0;32mI (4203) PLC: Conn 1 | proximityPilotVoltage = 4095[0m
+[0;32mI (4213) PLC: Conn 1 | controlPilotVoltage = 16383[0m
+[0;32mI (4213) PLC: Conn 1 | evTargetCurrent = 6553.5A[0m
+[0;32mI (4223) PLC: Conn 1 | evTargetVoltage = 6553.5V[0m
+[0;32mI (4223) PLC: Conn 1 | evSoC = 255%[0m
+[0;32mI (4233) PLC: Conn 1 | evErrorCode = 15[0m
+[0;32mI (4233) PLC: Conn 1 | evReady = 3[0m
+[0;32mI (4233) PLC: Conn 1 | evsePresentCurrent = 6553.5A[0m
+[0;32mI (4243) PLC: Conn 1 | evsePresentVoltage = 6553.5V[0m
+[0;32mI (4243) PLC: Conn 1 | evseIsolationStatus = 7[0m
+[0;32mI (4253) PLC: Conn 1 | evseStatusCode = 12[0m
+[0;32mI (4253) PLC: Conn 2 | controlPilotDuty = 127[0m
+[0;32mI (4253) PLC: Conn 2 | controlPilotState = 15[0m
+[0;32mI (4263) PLC: Conn 2 | stateMachineState = 15[0m
+[0;32mI (4263) PLC: Conn 2 | actualChargeProtocol = 15[0m
+[0;32mI (4273) PLC: Conn 2 | tcpStatus = 3[0m
+[0;32mI (4273) PLC: Conn 2 | pilotStatesStatus = 15[0m
+[0;32mI (4273) PLC: Conn 2 | slacStatus = 15[0m
+[0;32mI (4283) PLC: Conn 2 | proximityPilotVoltage = 4095[0m
+[0;32mI (4283) PLC: Conn 2 | controlPilotVoltage = 16383[0m
+[0;32mI (4293) PLC: Conn 2 | evTargetCurrent = 6553.5A[0m
+[0;32mI (4293) PLC: Conn 2 | evTargetVoltage = 6553.5V[0m
+[0;32mI (4303) PLC: Conn 2 | evSoC = 255%[0m
+[0;32mI (4303) PLC: Conn 2 | evErrorCode = 15[0m
+[0;32mI (4303) PLC: Conn 2 | evReady = 3[0m
+[0;32mI (4303) PLC: Conn 2 | evsePresentCurrent = 6553.5A[0m
+[0;32mI (4313) PLC: Conn 2 | evsePresentVoltage = 6553.5V[0m
+[0;32mI (4313) PLC: Conn 2 | evseIsolationStatus = 7[0m
+[0;32mI (4323) PLC: Conn 2 | evseStatusCode = 12[0m
+[0;32mI (4373) OCPP: ---------------------------------[0m
+[0;32mI (4373) OCPP: Printing Local List[0m
+[0;32mI (4373) OCPP: ---------------------------------[0m
+[0;32mI (4373) OCPP: ---------------------------------[0m
+[0;32mI (4403) OCPP: ---------------------------------[0m
+[0;32mI (4403) OCPP: Printing Local Authorization List[0m
+[0;32mI (4403) OCPP: ---------------------------------[0m
+[0;32mI (4403) OCPP: ---------------------------------[0m
+[0;32mI (4433) OCPP: ----------------------------------------------------------------------[0m
+[0;32mI (4433) OCPP: OCPP Configuration Parameters[0m
+[0;32mI (4433) OCPP: ----------------------------------------------------------------------[0m
+[0;32mI (4443) OCPP: AuthorizeRemoteTxRequestsValue         : false[0m
+[0;32mI (4453) OCPP: ClockAlignedDataIntervalValue          : 600[0m
+[0;32mI (4453) OCPP: ConnectionTimeOutValue                 : 120[0m
+[0;32mI (4463) OCPP: GetConfigurationMaxKeysValue           : 50[0m
+[0;32mI (4463) OCPP: HeartbeatIntervalValue                 : 30[0m
+[0;32mI (4473) OCPP: LocalAuthorizeOfflineValue             : true[0m
+[0;32mI (4473) OCPP: LocalPreAuthorizeValue                 : true[0m
+[0;32mI (4483) OCPP: MeterValuesAlignedDataValue            : Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature[0m
+[0;32mI (4493) OCPP: MeterValuesSampledDataValue            : Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature[0m
+[0;32mI (4503) OCPP: MeterValueSampleIntervalValue          : 30[0m
+[0;32mI (4513) OCPP: NumberOfConnectorsValue                : 2[0m
+[0;32mI (4523) OCPP: ResetRetriesValue                      : 3[0m
+[0;32mI (4523) OCPP: ConnectorPhaseRotationValue            : NotApplicable[0m
+[0;32mI (4533) OCPP: StopTransactionOnEVSideDisconnectValue : true[0m
+[0;32mI (4533) OCPP: StopTransactionOnInvalidIdValue        : true[0m
+[0;32mI (4543) OCPP: StopTxnAlignedDataValue                : Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature[0m
+[0;32mI (4553) OCPP: StopTxnSampledDataValue                : Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature[0m
+[0;32mI (4563) OCPP: SupportedFeatureProfilesValue          : Core,LocalAuthListManagement,Reservation,RemoteTrigger,FirmwareManagement,SmartCharging[0m
+[0;32mI (4583) OCPP: TransactionMessageAttemptsValue        : 2[0m
+[0;32mI (4583) OCPP: TransactionMessageRetryIntervalValue   : 60[0m
+[0;32mI (4593) OCPP: UnlockConnectorOnEVSideDisconnectValue : true[0m
+[0;32mI (4593) OCPP: AllowOfflineTxForUnknownIdValue        : false[0m
+[0;32mI (4603) OCPP: AuthorizationCacheEnabledValue         : true[0m
+[0;32mI (4603) OCPP: BlinkRepeatValue                       : 500[0m
+[0;32mI (4613) OCPP: LightIntensityValue                    : 100[0m
+[0;32mI (4613) OCPP: MaxEnergyOnInvalidIdValue              : 0[0m
+[0;32mI (4623) OCPP: MeterValuesAlignedDataMaxLengthValue   : 5[0m
+[0;32mI (4623) OCPP: MeterValuesSampledDataMaxLengthValue   : 5[0m
+[0;32mI (4633) OCPP: MinimumStatusDurationValue             : 900[0m
+[0;32mI (4633) OCPP: ConnectorPhaseRotationMaxLengthValue   : 1[0m
+[0;32mI (4643) OCPP: StopTxnAlignedDataMaxLengthValue       : 5[0m
+[0;32mI (4643) OCPP: StopTxnSampledDataMaxLengthValue       : 5[0m
+[0;32mI (4653) OCPP: SupportedFeatureProfilesMaxLengthValue : 6[0m
+[0;32mI (4653) OCPP: WebSocketPingIntervalValue             : 30[0m
+[0;32mI (4663) OCPP: LocalAuthListEnabledValue              : true[0m
+[0;32mI (4663) OCPP: LocalAuthListMaxLengthValue            : 10[0m
+[0;32mI (4673) OCPP: SendLocalListMaxLengthValue            : 10[0m
+[0;32mI (4673) OCPP: ReserveConnectorZeroSupportedValue     : false[0m
+[0;32mI (4683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (4683) OCPP: ChargeProfileMaxStackLevelValue        : 100[0m
+[0;32mI (4693) OCPP: ChargingScheduleAllowedChargingRateUnitValue : A[0m
+[0;32mI (4693) OCPP: ChargingScheduleMaxPeriodsValue        : 20[0m
+[0;32mI (4703) OCPP: ConnectorSwitch3to1PhaseSupportedValue : false[0m
+[0;32mI (4703) OCPP: MaxChargingProfilesInstalledValue      : 100[0m
+[0;32mI (4713) OCPP: ----------------------------------------------------------------------[0m
+
+[0;32mI (4733) Connector: ========================================[0m
+[0;32mI (4733) Connector:      CCS CONNECTOR MODULE STATUS [0m
+[0;32mI (4733) Connector: ========================================[0m
+[0;32mI (4733) Connector: Connector ID                : 1[0m
+[0;32mI (4743) Connector: ---------- CONNECTOR STATE ----------[0m
+[0;32mI (4743) Connector: Transaction Ongoing         : false[0m
+[0;32mI (4753) Connector: Offline Started             : false[0m
+[0;32mI (4753) Connector: Reserved                    : false[0m
+[0;32mI (4763) Connector: CMS Available Scheduled     : false[0m
+[0;32mI (4763) Connector: CMS Available               : false[0m
+[0;32mI (4773) Connector: CMS Available Changed       : false[0m
+[0;32mI (4773) Connector: UnkownId                    : false[0m
+[0;32mI (4783) Connector: InvalidId                   : false[0m
+[0;32mI (4783) Connector: Control Pilot State         : SNA[0m
+[0;32mI (4793) Connector: State Machine State         : SNA[0m
+[0;32mI (4793) Connector: Control Pilot Duty          : SNA[0m
+[0;32mI (4803) Connector: Connector Mode              : DC[0m
+[0;32mI (4803) Connector: ---------- TRANSACTION ----------[0m
+[0;32mI (4813) Connector: Transaction ID              : 0[0m
+[0;32mI (4813) Connector: Charging Duration           : 00:00:00[0m
+[0;32mI (4823) Connector: Stop Reason                 : Other[0m
+[0;32mI (4823) Connector: Meter Start                 : 0.00[0m
+[0;32mI (4833) Connector: Meter Stop                  : 0.00[0m
+[0;32mI (4833) Connector: DC Meter Start              : 0.00[0m
+[0;32mI (4843) Connector: DC Meter Stop               : 0.00[0m
+[0;32mI (4843) Connector: AC Meter Start              : 0.00[0m
+[0;32mI (4853) Connector: AC Meter Stop               : 0.00[0m
+[0;32mI (4853) Connector: Energy                      : 0.00[0m
+[0;32mI (4863) Connector: ---------- AC METER VALUES ----------[0m
+[0;32mI (4863) Connector: Voltage L1                  : 0.00[0m
+[0;32mI (4873) Connector: Voltage L2                  : 0.00[0m
+[0;32mI (4873) Connector: Voltage L3                  : 0.00[0m
+[0;32mI (4883) Connector: Current L1                  : 0.00[0m
+[0;32mI (4883) Connector: Current L2                  : 0.00[0m
+[0;32mI (4883) Connector: Current L3                  : 0.00[0m
+[0;32mI (4893) Connector: Power L1                    : 0.00[0m
+[0;32mI (4893) Connector: Power L2                    : 0.00[0m
+[0;32mI (4903) Connector: Power L3                    : 0.00[0m
+[0;32mI (4903) Connector: Temperature                 : 0.00[0m
+[0;32mI (4913) Connector: Power Factor                : 0.00[0m
+[0;32mI (4913) Connector: ---------- DC METER VALUES ----------[0m
+[0;32mI (4923) Connector: DC Voltage                  : 0.00[0m
+[0;32mI (4923) Connector: DC Current                  : 0.00[0m
+[0;32mI (4933) Connector: DC Power                    : 0.00[0m
+[0;32mI (4933) Connector: DC Temperature              : 0.00[0m
+[0;32mI (4943) Connector: ---------- RESERVATION DATA ----------[0m
+[0;32mI (4943) Connector: Reserved ID Tag             : [0m
+[0;32mI (4953) Connector: Expiry Date                 : [0m
+[0;32mI (4953) Connector: Parent ID Tag               : [0m
+[0;32mI (4963) Connector: Reservation ID              : 0[0m
+[0;32mI (4963) Connector: ---------- USER DATA ----------[0m
+[0;32mI (4973) Connector: ID Tag                      : [0m
+[0;32mI (4973) Connector: Meter Start Time            : [0m
+[0;32mI (4983) Connector: Meter Stop Time             : [0m
+[0;32mI (4983) Connector: ---------- FAULT VALUES ----------[0m
+[0;32mI (4993) Connector: AC Fault Voltage L1         : 72436189140602840000000.00[0m
+[0;32mI (4993) Connector: AC Fault Voltage L2         : 0.00[0m
+[0;32mI (5003) Connector: AC Fault Voltage L3         : 0.00[0m
+[0;32mI (5003) Connector: AC Fault Current L1         : 244910017148854320000000.00[0m
+[0;32mI (5013) Connector: AC Fault Current L2         : 18447984875502926000000000000.00[0m
+[0;32mI (5023) Connector: AC Fault Current L3         : 75634503011564815000000000000.00[0m
+[0;32mI (5023) Connector: AC Fault Power L1           : 0.00[0m
+[0;32mI (5033) Connector: AC Fault Power L2           : 0.00[0m
+[0;32mI (5033) Connector: AC Fault Power L3           : 62020457577204330000000.00[0m
+[0;32mI (5043) Connector: AC Fault Temperature        : 262418513920.00[0m
+[0;32mI (5053) Connector: AC Fault Power Factor       : 18319356623744036000000000.00[0m
+[0;32mI (5053) Connector: DC Fault Voltage            : 0.00[0m
+[0;32mI (5063) Connector: DC Fault Current            : 0.00[0m
+[0;32mI (5063) Connector: DC Fault Power              : 0.00[0m
+[0;32mI (5073) Connector: DC Fault Temperature        : 60390888177154430000000000000.00[0m
+[0;32mI (5073) Connector: EV MAC Address              : 00:00:00:00:00:00[0m
+[0;32mI (5083) Connector: ========================================[0m
+[0;32mI (5093) NETWORK: Wifi SSID EMEDGE[0m
+[0;32mI (5093) NETWORK: Wifi Password 9490848535[0m
+[0;32mI (5193) OCPP_TASK: OCPP Task started[0m
+[0;32mI (5193) Connector: Task 1 started for Connector 1[0m
+[0;32mI (5203) wifi:wifi driver task: 3ffd4684, prio:23, stack:6656, core=0[0m
+[0;32mI (5203) wifi:wifi firmware version: b37c951[0m
+[0;32mI (5203) wifi:wifi certification version: v7.0[0m
+[0;32mI (5203) wifi:config NVS flash: enabled[0m
+[0;32mI (5203) wifi:config nano formatting: disabled[0m
+[0;32mI (5213) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (5213) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (5223) wifi:Init management short buffer num: 32[0m
+[0;32mI (5223) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (5233) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (5233) wifi:Init static rx buffer num: 10[0m
+[0;32mI (5233) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (5243) wifi_init: rx ba win: 6[0m
+[0;32mI (5243) wifi_init: accept mbox: 6[0m
+[0;32mI (5243) wifi_init: tcpip mbox: 32[0m
+[0;32mI (5253) wifi_init: udp mbox: 6[0m
+[0;32mI (5253) wifi_init: tcp mbox: 6[0m
+[0;32mI (5253) wifi_init: tcp tx win: 5760[0m
+[0;32mI (5263) wifi_init: tcp rx win: 5760[0m
+[0;32mI (5263) wifi_init: tcp mss: 1440[0m
+[0;32mI (5263) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (5273) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;33mW (5273) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (5283) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (5363) phy_init: Saving new calibration data due to checksum failure or outdated calibration data, mode(0)[0m
+[0;32mI (5383) wifi:mode : sta (3c:8a:1f:81:9f:d4)[0m
+[0;32mI (5383) wifi:enable tsf[0m
+[0;32mI (5383) WIFI: WIFI_EVENT_STA_START[0m
+[0;32mI (5683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (6013) wifi:new:<4,1>, old:<1,0>, ap:<255,255>, sta:<4,1>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (6023) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (6023) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (6683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (7023) wifi:state: assoc -> init (0x400)[0m
+[0;32mI (7023) wifi:new:<4,0>, old:<4,1>, ap:<255,255>, sta:<4,1>, prof:1, snd_ch_cfg:0x0[0m
+[0;33mW (7033) WIFI: DISCONNECTED 4: WIFI_REASON_UNKNOWN[0m
+[0;32mI (7033) NETWORK: Num of Interfaces 1[0m
+[0;32mI (7683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (8683) TWAI: Waiting for CAN frame...[0m
+[1;31mE (9033) wifi:sta is connecting, return error[0m
+[0;33mW (9453) WIFI: DISCONNECTED 205: WIFI_REASON_CONNECTION_FAIL[0m
+[0;32mI (9683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (10043) wifi:new:<4,1>, old:<4,0>, ap:<255,255>, sta:<4,1>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (10043) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (10043) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (10683) TWAI: Waiting for CAN frame...[0m
+[1;31mE (11033) wifi:sta is connecting, return error[0m
+[0;32mI (11053) wifi:state: assoc -> init (0x400)[0m
+[0;32mI (11053) wifi:new:<4,0>, old:<4,1>, ap:<255,255>, sta:<4,1>, prof:1, snd_ch_cfg:0x0[0m
+[0;33mW (11053) WIFI: DISCONNECTED 4: WIFI_REASON_UNKNOWN[0m
+[0;32mI (11683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (12683) TWAI: Waiting for CAN frame...[0m
+[1;31mE (13033) wifi:sta is connecting, return error[0m
+[0;32mI (13683) TWAI: Waiting for CAN frame...[0m
+[1;31mE (14033) wifi:sta is connecting, return error[0m
+[0;33mW (14453) WIFI: DISCONNECTED 205: WIFI_REASON_CONNECTION_FAIL[0m
+[0;32mI (14683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (15043) wifi:new:<4,1>, old:<4,0>, ap:<255,255>, sta:<4,1>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (15043) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (15053) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (15073) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (15193) wifi:connected with EMEDGE, aid = 19, channel 4, 40U, bssid = 7c:f1:7e:2f:bf:ba[0m
+[0;32mI (15193) wifi:security: WPA2-PSK, phy: bgn, rssi: -35, cipher(pairwise:0x3, group:0x1), pmf:0[0m
+[0;32mI (15203) wifi:pm start, type: 1[0m
+
+[0;32mI (15203) wifi:dp: 1, bi: 102400, li: 3, scale listen interval from 307200 us to 307200 us[0m
+[0;32mI (15213) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (15223) WIFI: WIFI_EVENT_STA_CONNECTED[0m
+[0;32mI (15223) wifi:Set ps type: 0, coexist: 0[0m
+
+[0;32mI (15683) TWAI: Waiting for CAN frame...[0m
+[0;33mW (16033) wifi:sta is connected, disconnect before connecting to new ap[0m
+[0;32mI (16133) MAIN: Free Heap: 140800 bytes[0m
+[0;32mI (16683) TWAI: Waiting for CAN frame...[0m
+[0;33mW (17033) wifi:sta is connected, disconnect before connecting to new ap[0m
+[0;32mI (17683) TWAI: Waiting for CAN frame...[0m
+[0;33mW (18033) wifi:sta is connected, disconnect before connecting to new ap[0m
+[0;32mI (18683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (18733) wifi:<ba-add>idx:0 (ifx:0, 7c:f1:7e:2f:bf:ba), tid:5, ssn:6, winSize:64[0m
+[0;33mW (19033) wifi:sta is connected, disconnect before connecting to new ap[0m
+[0;32mI (19683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (19723) esp_netif_handlers: sta ip: 192.168.0.3, mask: 255.255.255.0, gw: 192.168.0.1[0m
+[0;32mI (19723) WIFI: IP_EVENT_STA_GOT_IP[0m
+[1;31mE (20033) NETWORK: Trying Wifi[0m
+[0;32mI (20033) WEBSOCKET: Connecting to ws://evre.pulseenergy.io/ws/OCPP16J/1000/CPK8IR6MV6...[0m
+[0;32mI (20033) WEBSOCKET: WEBSOCKET_EVENT_BEGIN[0m
+[0;32mI (20033) websocket_client: Started[0m
+[0;32mI (20043) wifi:<ba-add>idx:1 (ifx:0, 7c:f1:7e:2f:bf:ba), tid:0, ssn:1, winSize:64[0m
+[0;32mI (20173) WEBSOCKET: WEBSOCKET_EVENT_CONNECTED[0m
+[0;32mI (20193) WEBSOCKET: Sent: [2, "1000", "BootNotification", {[0m
+		"chargePointVendor":	"EMEDGE",
+		"chargePointModel":	"HALO",
+		"chargePointSerialNumber":	"CPK8IR6MV6",
+		"chargeBoxSerialNumber":	"Amplify",
+		"firmwareVersion":	"0120c85-dirty"
+	}]
+[0;32mI (20403) WEBSOCKET: Received=[3,"1000",{"currentTime":"2026-05-29T08:52:26.113Z","status":"Accepted","interval":45}][0m
+[0;32mI (20683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (21683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (22683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (23683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (24683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (25683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (26133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (26683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (27683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (28683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (29683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (30683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (31683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (32683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (33683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (34683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (35103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (35103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (35683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (36133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (36683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (37683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (38683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (39683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (40683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (41683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (42683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (43683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (44683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (45683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (46133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (46683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (47683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (48683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (49683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (50193) WEBSOCKET: Sent: [2,"1001","Heartbeat",{}][0m
+[0;32mI (50343) WEBSOCKET: Received=[3,"1001",{"currentTime":"2026-05-29T08:52:56.051Z"}][0m
+[0;32mI (50393) WEBSOCKET: PONG Received[0m
+[0;32mI (50683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (51683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (52683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (53683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (54683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (55683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (56133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (56683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (57683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (58683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (59683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (60683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (61683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (62683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (63683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (64683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (65103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (65103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (65683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (66133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (66683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (67683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (68683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (69683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (70683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (71683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (72683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (73683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (74683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (75683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (76133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (76683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (77683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (78683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (79683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (80683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (80733) WEBSOCKET: PONG Received[0m
+[0;32mI (81683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (82683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (83683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (84683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (85683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (86133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (86683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (87683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (88683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (89683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (90683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (91683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (92683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (93683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (94683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (95103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (95103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (95193) WEBSOCKET: Sent: [2,"1002","Heartbeat",{}][0m
+[0;32mI (95433) WEBSOCKET: Received=[3,"1002",{"currentTime":"2026-05-29T08:53:41.103Z"}][0m
+[0;32mI (95683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (96133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (96683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (97683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (98683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (99683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (100683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (101683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (102683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (103683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (104683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (105683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (106133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (106683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (107683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (108683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (109683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (110683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (111633) WEBSOCKET: PONG Received[0m
+[0;32mI (111683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (112683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (113683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (114683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (115683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (116133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (116683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (117683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (118683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (119683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (120683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (121683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (122683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (123683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (124683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (125103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (125103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (125683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (126133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (126683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (127683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (128683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (129683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (130683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (131683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (132683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (133683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (134683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (135683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (136133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (136683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (137683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (138683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (139683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (140193) WEBSOCKET: Sent: [2,"1003","Heartbeat",{}][0m
+[0;32mI (140423) WEBSOCKET: Received=[3,"1003",{"currentTime":"2026-05-29T08:54:26.103Z"}][0m
+[0;32mI (140683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (141683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (142493) WEBSOCKET: PONG Received[0m
+[0;32mI (142683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (143683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (144683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (145683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (146133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (146683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (147683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (148683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (149683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (150683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (151683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (152683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (153683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (154683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (155103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (155103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (155683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (156133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (156683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (157683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (158683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (159683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (160683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (161683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (162683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (163683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (164683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (165683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (166133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (166683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (167683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (168683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (169683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (170683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (171683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (172683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (172843) WEBSOCKET: PONG Received[0m
+[0;32mI (173683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (174683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (175683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (176133) MAIN: Free Heap: 116512 bytes[0m
+[0;32mI (176683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (177683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (178683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (179683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (180683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (181683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (182683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (183683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (184683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (185103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (185103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (185193) WEBSOCKET: Sent: [2,"1004","Heartbeat",{}][0m
+[0;32mI (185403) WEBSOCKET: Received=[3,"1004",{"currentTime":"2026-05-29T08:55:11.100Z"}][0m
+[0;32mI (185683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (186133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (186683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (187683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (188683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (189683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (190683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (191683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (192683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (193683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (194683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (195683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (196133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (196683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (197683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (198683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (199683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (200683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (201683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (202683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (203623) WEBSOCKET: PONG Received[0m
+[0;32mI (203683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (204683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (205683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (206133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (206683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (207683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (208683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (209683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (210683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (211683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (212683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (213683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (214683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (215103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (215103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (215683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (216133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (216683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (217683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (218683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (219683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (220683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (221683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (222683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (223683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (224683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (225683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (226133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (226683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (227683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (228683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (229683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (230193) WEBSOCKET: Sent: [2,"1005","Heartbeat",{}][0m
+[0;32mI (230433) WEBSOCKET: Received=[3,"1005",{"currentTime":"2026-05-29T08:55:56.108Z"}][0m
+[0;32mI (230683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (231683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (232683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (233683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (234583) WEBSOCKET: PONG Received[0m
+[0;32mI (234683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (235683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (236133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (236683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (237683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (238683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (239683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (240683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (241683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (242683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (243683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (244683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (245103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (245103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (245683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (246133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (246683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (247683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (248683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (249683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (250683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (251683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (252683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (253683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (254683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (255683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (256133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (256683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (257683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (258683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (259683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (260683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (261683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (262683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (263683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (264683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (264953) WEBSOCKET: PONG Received[0m
+[0;32mI (265683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (266133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (266683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (267683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (268683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (269683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (270683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (271683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (272683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (273683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (274683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (275103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (275103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (275193) WEBSOCKET: Sent: [2,"1006","Heartbeat",{}][0m
+[0;32mI (275423) WEBSOCKET: Received=[3,"1006",{"currentTime":"2026-05-29T08:56:41.118Z"}][0m
+[0;32mI (275683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (276133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (276683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (277683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (278683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (279683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (280683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (281683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (282683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (283683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (284683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (285683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (286133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (286683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (287683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (288683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (289683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (290683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (291683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (292683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (293683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (294683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (295663) WEBSOCKET: PONG Received[0m
+[0;32mI (295683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (296133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (296683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (297683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (298683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (299683) TWAI: Waiting for CAN frame...[0m
+I (300683) TWAI: Waiting for CAN frame...
+[0;32mI (301683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (302683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (303683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (304683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (305103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (305103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (305683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (306133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (306683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (307683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (308683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (309683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (310683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (311683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (312683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (313683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (314683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (315683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (316133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (316683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (317683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (318683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (319683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (320193) WEBSOCKET: Sent: [2,"1007","Heartbeat",{}][0m
+[0;32mI (320393) WEBSOCKET: Received=[3,"1007",{"currentTime":"2026-05-29T08:57:26.097Z"}][0m
+[0;32mI (320683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (321683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (322683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (323683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (324683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (325683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (326133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (326493) WEBSOCKET: PONG Received[0m
+[0;32mI (326683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (327683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (328683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (329683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (330683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (331683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (332683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (333683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (334683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (335103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (335103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (335683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (336133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (336683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (337683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (338683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (339683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (340683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (341683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (342683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (343683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (344683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (345683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (346133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (346683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (347683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (348683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (349683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (350683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (351683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (352683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (353683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (354683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (355683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (356133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (356683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (356853) WEBSOCKET: PONG Received[0m
+[0;32mI (357683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (358683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (359683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (360683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (361683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (362683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (363683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (364683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (365093) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (365103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (365193) WEBSOCKET: Sent: [2,"1008","Heartbeat",{}][0m
+[0;32mI (365413) WEBSOCKET: Received=[3,"1008",{"currentTime":"2026-05-29T08:58:11.104Z"}][0m
+[0;32mI (365683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (366133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (366683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (367683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (368683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (369683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (370683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (371683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (372683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (373683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (374683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (375683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (376133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (376683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (377683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (378683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (379683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (380683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (381683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (382683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (383683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (384683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (385683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (386133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (386683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (387683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (387683) WEBSOCKET: PONG Received[0m
+[0;32mI (388683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (389683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (390683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (391683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (392683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (393683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (394683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (395103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (395103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (395683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (396133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (396683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (397683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (398683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (399683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (400683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (401683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (402683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (403683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (404683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (405683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (406133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (406683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (407683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (408683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (409683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (410193) WEBSOCKET: Sent: [2,"1009","Heartbeat",{}][0m
+[0;32mI (410403) WEBSOCKET: Received=[3,"1009",{"currentTime":"2026-05-29T08:58:56.093Z"}][0m
+[0;32mI (410683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (411683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (412683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (413683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (414683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (415683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (416133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (416683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (417683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (418523) WEBSOCKET: PONG Received[0m
+[0;32mI (418683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (419683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (420683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (421683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (422683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (423683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (424683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (425103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (425103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (425683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (426133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (426683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (427683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (428683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (429683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (430683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (431683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (432683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (433683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (434683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (435683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (436133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (436683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (437683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (438683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (439683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (440683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (441683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (442683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (443683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (444683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (445683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (446133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (446683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (447683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (448683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (448883) WEBSOCKET: PONG Received[0m
+[0;32mI (449683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (450683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (451683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (452683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (453683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (454683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (455103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (455103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (455193) WEBSOCKET: Sent: [2,"1010","Heartbeat",{}][0m
+[0;32mI (455413) WEBSOCKET: Received=[3,"1010",{"currentTime":"2026-05-29T08:59:41.103Z"}][0m
+[0;32mI (455683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (456133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (456683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (457683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (458683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (459683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (460683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (461683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (462683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (463683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (464683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (465683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (466133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (466683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (467683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (468683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (469683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (470683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (471683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (472683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (473683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (474683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (475683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (476133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (476683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (477683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (478683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (479683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (479703) WEBSOCKET: PONG Received[0m
+[0;32mI (480683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (481683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (482683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (483683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (484683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (485103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (485103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (485683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (486133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (486683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (487683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (488683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (489683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (490683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (491683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (492683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (493683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (494683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (495683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (496133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (496683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (497683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (498683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (499683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (500193) WEBSOCKET: Sent: [2,"1011","Heartbeat",{}][0m
+[0;32mI (500483) WEBSOCKET: Received=[3,"1011",{"currentTime":"2026-05-29T09:00:26.125Z"}][0m
+[0;32mI (500683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (501683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (502683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (503683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (504683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (505683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (506133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (506683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (507683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (508683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (509683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (510633) WEBSOCKET: PONG Received[0m
+[0;32mI (510683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (511683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (512683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (513683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (514683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (515103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (515103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (515683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (516133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (516683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (517683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (518683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (519683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (520683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (521683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (522683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (523683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (524683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (525683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (526133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (526683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (527683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (528683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (529683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (530683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (531683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (532683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (533683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (534683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (535683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (536133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (536683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (537683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (538683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (539683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (540683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (540973) WEBSOCKET: PONG Received[0m
+[0;32mI (541683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (542683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (543683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (544683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (545103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (545103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (545193) WEBSOCKET: Sent: [2,"1012","Heartbeat",{}][0m
+[0;32mI (545413) WEBSOCKET: Received=[3,"1012",{"currentTime":"2026-05-29T09:01:11.104Z"}][0m
+[0;32mI (545683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (546133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (546683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (547683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (548683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (549683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (550683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (551683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (552683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (553683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (554683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (555683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (556133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (556683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (557683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (558683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (559683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (560683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (561683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (562683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (563683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (564683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (565683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (566133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (566683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (567683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (568683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (569683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (570683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (571683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (571713) WEBSOCKET: PONG Received[0m
+[0;32mI (572683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (573683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (574683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (575103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (575103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (575683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (576133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (576683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (577683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (578683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (579683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (580683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (581683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (582683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (583683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (584683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (585683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (586133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (586683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (587683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (588683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (589683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (590193) WEBSOCKET: Sent: [2,"1013","Heartbeat",{}][0m
+[0;32mI (590443) WEBSOCKET: Received=[3,"1013",{"currentTime":"2026-05-29T09:01:56.099Z"}][0m
+[0;32mI (590683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (591683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (592683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (593683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (594683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (595683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (596133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (596683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (597683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (598683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (599683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (600683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (601683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (602683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (603483) WEBSOCKET: PONG Received[0m
+[0;32mI (603683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (604683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (605103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (605103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (605683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (606133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (606683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (607683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (608683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (609683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (610683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (611683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (612683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (613683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (614683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (615683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (616133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (616683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (617683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (618683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (619683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (620683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (621683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (622683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (623683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (624683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (625683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (626133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (626683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (627683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (628683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (629683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (630683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (631683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (632683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (632823) WEBSOCKET: PONG Received[0m
+[0;32mI (633683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (634683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (635103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (635103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (635193) WEBSOCKET: Sent: [2,"1014","Heartbeat",{}][0m
+[0;32mI (635393) WEBSOCKET: Received=[3,"1014",{"currentTime":"2026-05-29T09:02:41.092Z"}][0m
+[0;32mI (635683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (636133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (636683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (637683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (638683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (639683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (640683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (641683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (642683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (643683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (644683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (645683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (646133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (646683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (647683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (648683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (649683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (650683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (651683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (652683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (653683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (654683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (655683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (656133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (656683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (657683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (658683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (659683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (660683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (661683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (662683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (663683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (663723) WEBSOCKET: PONG Received[0m
+[0;32mI (664683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (665103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (665103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (665683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (666133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (666683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (667683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (668683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (669683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (670683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (671683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (672683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (673683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (674683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (675683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (676133) MAIN: Free Heap: 116404 bytes[0m
+[0;32mI (676683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (677683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (678683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (679683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (680193) WEBSOCKET: Sent: [2,"1015","Heartbeat",{}][0m
+[0;32mI (680473) WEBSOCKET: Received=[3,"1015",{"currentTime":"2026-05-29T09:03:26.126Z"}][0m
+[0;32mI (680683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (681683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (682683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (683683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (684683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (685683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (686133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (686683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (687683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (688683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (689683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (690683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (691683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (692683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (693683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (694653) WEBSOCKET: PONG Received[0m
+[0;32mI (694683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (695103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (695103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (695683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (696133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (696683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (697683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (698683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (699683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (700683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (701683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (702683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (703683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (704683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (705683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (706133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (706683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (707683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (708683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (709683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (710683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (711683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (712683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (713683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (714683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (715683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (716133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (716683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (717683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (718683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (719683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (720683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (721683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (722683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (723683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (724683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (724993) WEBSOCKET: PONG Received[0m
+[0;32mI (725103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (725103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (725193) WEBSOCKET: Sent: [2,"1016","Heartbeat",{}][0m
+[0;32mI (725393) WEBSOCKET: Received=[3,"1016",{"currentTime":"2026-05-29T09:04:11.097Z"}][0m
+[0;32mI (725683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (726133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (726683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (727683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (728683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (729683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (730683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (731683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (732683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (733683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (734683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (735683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (736133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (736683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (737683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (738683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (739683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (740683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (741683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (742683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (743683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (744683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (745683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (746133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (746683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (747683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (748683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (749683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (750683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (751683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (752683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (753683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (754683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (755103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (755103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (755683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (755753) WEBSOCKET: PONG Received[0m
+[0;32mI (756133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (756683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (757683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (758683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (759683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (760683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (761683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (762683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (763683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (764683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (765683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (766133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (766683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (767683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (768683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (769683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (770193) WEBSOCKET: Sent: [2,"1017","Heartbeat",{}][0m
+[0;32mI (770413) WEBSOCKET: Received=[3,"1017",{"currentTime":"2026-05-29T09:04:56.116Z"}][0m
+[0;32mI (770683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (771683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (772683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (773683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (774683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (775683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (776133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (776683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (777683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (778683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (779683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (780683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (781683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (782683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (783683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (784683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (785103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (785103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (785683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (786133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (786653) WEBSOCKET: PONG Received[0m
+[0;32mI (786683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (787683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (788683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (789683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (790683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (791683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (792683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (793683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (794683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (795683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (796133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (796683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (797683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (798683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (799683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (800683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (801683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (802683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (803683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (804683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (805683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (806133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (806683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (807683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (808683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (809683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (810683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (811683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (812683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (813683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (814683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (815103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (815103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (815193) WEBSOCKET: Sent: [2,"1018","Heartbeat",{}][0m
+[0;32mI (815403) WEBSOCKET: Received=[3,"1018",{"currentTime":"2026-05-29T09:05:41.096Z"}][0m
+[0;32mI (815683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (816133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (816683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (817463) WEBSOCKET: PONG Received[0m
+[0;32mI (817683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (818683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (819683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (820683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (821683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (822683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (823683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (824683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (825683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (826133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (826683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (827683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (828683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (829683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (830683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (831683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (832683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (833683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (834683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (835683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (836133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (836683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (837683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (838683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (839683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (840683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (841683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (842683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (843683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (844683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (845103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (845103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (845683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (846133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (846683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (847683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (847803) WEBSOCKET: PONG Received[0m
+[0;32mI (848683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (849683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (850683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (851683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (852683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (853683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (854683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (855683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (856133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (856683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (857683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (858683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (859683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (860193) WEBSOCKET: Sent: [2,"1019","Heartbeat",{}][0m
+[0;32mI (860413) WEBSOCKET: Received=[3,"1019",{"currentTime":"2026-05-29T09:06:26.107Z"}][0m
+[0;32mI (860683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (861683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (862683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (863683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (864683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (865683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (866133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (866683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (867683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (868683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (869683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (870683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (871683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (872683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (873683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (874683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (875103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (875103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (875683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (876133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (876683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (877683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (878643) WEBSOCKET: PONG Received[0m
+[0;32mI (878683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (879683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (880683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (881683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (882683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (883683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (884683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (885683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (886133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (886683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (887683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (888683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (889683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (890683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (891683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (892683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (893683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (894683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (895683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (896133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (896683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (897683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (898683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (899683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (900683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (901683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (902683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (903683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (904683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (905103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (905103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (905193) WEBSOCKET: Sent: [2,"1020","Heartbeat",{}][0m
+[0;32mI (905383) WEBSOCKET: Received=[3,"1020",{"currentTime":"2026-05-29T09:07:11.095Z"}][0m
+[0;32mI (905683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (906133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (906683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (907683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (908683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (909483) WEBSOCKET: PONG Received[0m
+[0;32mI (909683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (910683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (911683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (912683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (913683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (914683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (915683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (916133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (916683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (917683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (918683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (919683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (920683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (921683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (922683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (923683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (924683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (925683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (926133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (926683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (927683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (928683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (929683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (930683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (931683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (932683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (933683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (934683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (935103) Connector: Connector 1: SMState: SNA[0m
+[0;32mI (935103) Connector: Connector 1: CPState: SNA[0m
+[0;32mI (935683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (936133) MAIN: Free Heap: 116388 bytes[0m
+[0;32mI (936683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (937683) TWAI: Waiting for CAN frame...[0m
+[0;32mI (938683) TWAI: Waiting for CAN frame...[0m

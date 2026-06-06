@@ -189,7 +189,7 @@ namespace CCSConnector
             strcpy(status.ReservedData.parentidTag, cJSON_GetObjectItem(res, "parentidTag")->valuestring);
             status.ReservedData.reservationId = cJSON_GetObjectItem(res, "reservationId")->valueint;
 
-            cJSON *acMeterValuesFault = cJSON_GetObjectItem(json, "ACMeterValues");
+            cJSON *acMeterValuesFault = cJSON_GetObjectItem(json, "ACMeterValuesFault");
             cJSON *acFVolt = cJSON_GetObjectItem(acMeterValuesFault, "voltage");
             for (int i = 0; i < 4; i++)
             {
@@ -212,7 +212,7 @@ namespace CCSConnector
             status.DCMeterValuesFault.voltage = cJSON_GetObjectItem(dcMeterValuesFault, "voltage")->valuedouble;
             status.DCMeterValuesFault.current = cJSON_GetObjectItem(dcMeterValuesFault, "current")->valuedouble;
             status.DCMeterValuesFault.power = cJSON_GetObjectItem(dcMeterValuesFault, "power")->valuedouble;
-            status.DCMeterValues.temperature = cJSON_GetObjectItem(dcMeterValuesFault, "temperature")->valuedouble;
+            status.DCMeterValuesFault.temperature = cJSON_GetObjectItem(dcMeterValuesFault, "temperature")->valuedouble;
 
             status.EVMacAddress = (uint64_t)cJSON_GetObjectItem(json, "EVMacAddress")->valuedouble;
             strcpy(status.idTag, cJSON_GetObjectItem(json, "idTag")->valuestring);
@@ -368,21 +368,21 @@ namespace CCSConnector
         {
             cJSON *voltArray = cJSON_CreateArray();
             for (int i = 0; i < 4; i++)
-                cJSON_AddItemToArray(voltArray, cJSON_CreateNumber(status.ACMeterValues.voltage[i]));
+                cJSON_AddItemToArray(voltArray, cJSON_CreateNumber(status.ACMeterValuesFault.voltage[i]));
             cJSON_AddItemToObject(acMeterValuesFault, "voltage", voltArray);
 
             cJSON *currArray = cJSON_CreateArray();
             for (int i = 0; i < 4; i++)
-                cJSON_AddItemToArray(currArray, cJSON_CreateNumber(status.ACMeterValues.current[i]));
+                cJSON_AddItemToArray(currArray, cJSON_CreateNumber(status.ACMeterValuesFault.current[i]));
             cJSON_AddItemToObject(acMeterValuesFault, "current", currArray);
 
             cJSON *powArray = cJSON_CreateArray();
             for (int i = 0; i < 4; i++)
-                cJSON_AddItemToArray(powArray, cJSON_CreateNumber(status.ACMeterValues.power[i]));
+                cJSON_AddItemToArray(powArray, cJSON_CreateNumber(status.ACMeterValuesFault.power[i]));
             cJSON_AddItemToObject(acMeterValuesFault, "power", powArray);
 
-            cJSON_AddNumberToObject(acMeterValuesFault, "temperature", status.ACMeterValues.temperature);
-            cJSON_AddNumberToObject(acMeterValuesFault, "powerFactor", status.ACMeterValues.powerFactor);
+            cJSON_AddNumberToObject(acMeterValuesFault, "temperature", status.ACMeterValuesFault.temperature);
+            cJSON_AddNumberToObject(acMeterValuesFault, "powerFactor", status.ACMeterValuesFault.powerFactor);
 
             cJSON_AddItemToObject(json, "ACMeterValuesFault", acMeterValuesFault);
         }
@@ -603,7 +603,7 @@ namespace CCSConnector
         earthDisconnect = false;
         powerLoss = false;
         updatingFirmwarePending = false;
-        uint8_t NumberOfConnectors = NUM_OF_CONNECTORS - 1;
+        NumberOfConnectors = NUM_OF_CONNECTORS - 1;
         FirmwareUpdateFailed = false;
         FirmwareUpdateStarted = false;
 

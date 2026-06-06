@@ -8,8 +8,37 @@
 GpioModule::GpioController *gpio;
 
 #define TAG "GPIO"
+
 namespace GpioModule
 {
+
+    static bool IsValidEspOutputGPIO(uint16_t pin)
+    {
+        if (pin > 39)
+        {
+            ESP_LOGE(TAG, "Invalid GPIO number: %d", pin);
+            return false;
+        }
+
+        if (pin >= 34 && pin <= 39)
+        {
+            ESP_LOGE(TAG, "GPIO %d is input only, cannot configure OUTPUT", pin);
+            return false;
+        }
+
+        return true;
+    }
+
+    static bool IsValidEspInputGPIO(uint16_t pin)
+    {
+        if (pin > 39)
+        {
+            ESP_LOGE(TAG, "Invalid GPIO number: %d", pin);
+            return false;
+        }
+
+        return true;
+    }
     // Constructor
     GpioController::GpioController(SendDataFunc func)
     {
@@ -244,24 +273,29 @@ namespace GpioModule
                 {
                     if (gpioList[i]->isInput)
                     {
-                        gpio_set_direction(static_cast<gpio_num_t>(gpioList[i]->gpioNum), GPIO_MODE_INPUT);
-                        gpio_pulldown_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
-                        gpio_pullup_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
-                        ESP_LOGD(TAG, "Configured GPIO %d as INPUT for %s", gpioList[i]->gpioNum, gpioList[i]->name);
+                        if (IsValidEspInputGPIO(gpioList[i]->gpioNum))
+                        {
+                            gpio_set_direction(static_cast<gpio_num_t>(gpioList[i]->gpioNum), GPIO_MODE_INPUT);
+                            gpio_pulldown_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
+                            gpio_pullup_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
+                            ESP_LOGD(TAG, "Configured GPIO %d INPUT %s", gpioList[i]->gpioNum, gpioList[i]->name);
+                        }
                     }
                     else
                     {
-                        gpio_reset_pin(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
-                        gpio_set_direction(static_cast<gpio_num_t>(gpioList[i]->gpioNum), GPIO_MODE_OUTPUT);
-                        gpio_pulldown_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
-                        gpio_pullup_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
-                        gpio_set_level(static_cast<gpio_num_t>(gpioList[i]->gpioNum), 0);
-                        ESP_LOGD(TAG, "Configured GPIO %d as OUTPUT for %s", gpioList[i]->gpioNum, gpioList[i]->name);
+                        if (IsValidEspOutputGPIO(gpioList[i]->gpioNum))
+                        {
+                            gpio_reset_pin(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
+                            gpio_set_direction(static_cast<gpio_num_t>(gpioList[i]->gpioNum), GPIO_MODE_OUTPUT);
+                            gpio_pulldown_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
+                            gpio_pullup_dis(static_cast<gpio_num_t>(gpioList[i]->gpioNum));
+                            gpio_set_level(static_cast<gpio_num_t>(gpioList[i]->gpioNum), 0);
+                            ESP_LOGD(TAG, "Configured GPIO %d OUTPUT %s", gpioList[i]->gpioNum, gpioList[i]->name);
+                        }
                     }
                 }
             }
         }
-
         xTaskCreate(&GpioTask, "GpioTask", 4 * 1024, this, 2, NULL);
     }
 
@@ -356,6 +390,12 @@ namespace GpioModule
         {
             if (gpio.isDirectGpio)
             {
+                if (!IsValidEspOutputGPIO(gpio.gpioNum))
+                {
+                    ESP_LOGE(TAG, "Blocked invalid GPIO write: %d", gpio.gpioNum);
+                    return false;
+                }
+
                 if (gpio_set_level(static_cast<gpio_num_t>(gpio.gpioNum), static_cast<uint8_t>(state)) != ESP_OK)
                 {
                     ESP_LOGE(TAG, "Failed to set GPIO level %d for GPIO Num: %d", static_cast<uint8_t>(state), gpio.gpioNum);

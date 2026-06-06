@@ -41,10 +41,10 @@
 #define GPIOH 8
 #define GPIOI 9
 
-#define StmReset_Pin 38
+#define StmReset_Pin 18
 #define ModemReset_Pin 21
-#define EmergencyBtn_Pin 47
-#define EarthFault_Pin 48
+#define EmergencyBtn_Pin 34
+#define EarthFault_Pin 35
 #define SpdFault_Pin 5
 #define SmokeFault_Pin 4
 

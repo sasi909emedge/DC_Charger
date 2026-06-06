@@ -167,7 +167,19 @@ namespace ConfigModule
                     }
                 }
             }
+
+            ESP_LOGW(TAG, "Saving default configuration to flash");
+
+            if (WriteConfigurationToFlash() == ESP_OK)
+            {
+                ESP_LOGI(TAG, "Default configuration saved successfully");
+            }
+            else
+            {
+                ESP_LOGE(TAG, "Failed to save default configuration");
+            }
         }
+
         printConfigParameters();
     }
 
@@ -727,7 +739,7 @@ namespace ConfigModule
             }
         }
 
-        char *jsonString = cJSON_PrintUnformatted(json);
+        char *jsonString = cJSON_Print(json);
         cJSON_Delete(json);
 
         if (jsonString == NULL)
@@ -837,16 +849,38 @@ namespace ConfigModule
                     if (pm == NULL)
                         continue;
 
-                    this->NumberOfSubSets[i].PowerModule[j][k].isAvailable = cJSON_GetObjectItem(pm, "isAvailable")->valueint;
-                    this->NumberOfSubSets[i].PowerModule[j][k].moduleAddress = cJSON_GetObjectItem(pm, "moduleAddress")->valueint;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxVoltage = cJSON_GetObjectItem(pm, "MaxVoltage")->valuedouble;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxCurrent = cJSON_GetObjectItem(pm, "MaxCurrent")->valuedouble;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinVoltage = cJSON_GetObjectItem(pm, "MinVoltage")->valuedouble;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinCurrent = cJSON_GetObjectItem(pm, "MinCurrent")->valuedouble;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxPower = cJSON_GetObjectItem(pm, "MaxPower")->valuedouble;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinPower = cJSON_GetObjectItem(pm, "MinPower")->valuedouble;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MaxTemperature = cJSON_GetObjectItem(pm, "MaxTemperature")->valuedouble;
-                    this->NumberOfSubSets[i].PowerModule[j][k].MinTemperature = cJSON_GetObjectItem(pm, "MinTemperature")->valuedouble;
+                    cJSON *item = NULL;
+
+                    item = cJSON_GetObjectItem(pm, "isAvailable");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].isAvailable = item->valueint;
+                    item = cJSON_GetObjectItem(pm, "moduleAddress");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].moduleAddress = item->valueint;
+                    item = cJSON_GetObjectItem(pm, "MaxVoltage");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxVoltage = item->valuedouble;
+                    item = cJSON_GetObjectItem(pm, "MaxCurrent");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxCurrent = item->valuedouble;
+                    item = cJSON_GetObjectItem(pm, "MinVoltage");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinVoltage = item->valuedouble;
+                    item = cJSON_GetObjectItem(pm, "MinCurrent");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinCurrent = item->valuedouble;
+                    item = cJSON_GetObjectItem(pm, "MaxPower");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxPower = item->valuedouble;
+                    item = cJSON_GetObjectItem(pm, "MinPower");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinPower = item->valuedouble;
+                    item = cJSON_GetObjectItem(pm, "MaxTemperature");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MaxTemperature = item->valuedouble;
+                    item = cJSON_GetObjectItem(pm, "MinTemperature");
+                    if (item)
+                        this->NumberOfSubSets[i].PowerModule[j][k].MinTemperature = item->valuedouble;
                 }
             }
         }

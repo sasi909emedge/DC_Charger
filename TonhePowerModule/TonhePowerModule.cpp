@@ -233,6 +233,7 @@ namespace PowerModule
             }
             moduleStatus[moduleId].outputVoltage = data.chargingModuleState.outputVoltage / Constants::VOLTAGE_FACTOR;
             moduleStatus[moduleId].outputCurrent = data.chargingModuleState.outputCurrent / Constants::CURRENT_FACTOR;
+            ESP_LOGI("PMC", "PM OUTPUT | PM=%d Voltage=%.1fV Current=%.1fA", moduleId, moduleStatus[moduleId].outputVoltage, moduleStatus[moduleId].outputCurrent);
         }
     }
 
@@ -336,7 +337,7 @@ namespace PowerModule
             moduleStatus[moduleId].inputVoltage = voltage;
             moduleStatus[moduleId].inputCurrent = current;
         }
-
+        ESP_LOGI("PMC", "PM START | Module=%d Voltage=%.1fV Current=%.1fA", moduleAddress, voltage, current);
         return status;
     }
 

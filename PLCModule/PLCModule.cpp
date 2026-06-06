@@ -536,11 +536,13 @@ namespace PLCModule
     bool PLCController::Set_EVSEMaxCurrent(uint8_t ConnID, float EVSEMaxCurrent)
     {
         moduleStatus[ConnID].evseMaxCurrent = EVSEMaxCurrent;
+        ESP_LOGI("PLC", "Conn %d | evseMaxCurrent = %.1fA", ConnID, moduleStatus[ConnID].evseMaxCurrent);
         return true;
     }
     bool PLCController::Set_EVSEMaxVoltage(uint8_t ConnID, float EVSEMaxVoltage)
     {
         moduleStatus[ConnID].evseMaxVoltage = EVSEMaxVoltage;
+        ESP_LOGI("PLC", "Conn %d | evseMaxVoltage = %.1fV", ConnID, moduleStatus[ConnID].evseMaxVoltage);
         return true;
     }
     bool PLCController::Set_EVSEMaxPower(uint8_t ConnID, float EVSEMaxPower)
@@ -551,6 +553,7 @@ namespace PLCModule
     bool PLCController::Set_EVSEEnergyToBeDelivered(uint8_t ConnID, float EVSEEnergyToBeDelivered)
     {
         moduleStatus[ConnID].evseEnergyToBeDelivered = EVSEEnergyToBeDelivered;
+        ESP_LOGI("PLC", "Conn %d | evseEnergyToBeDelivered = %.1fWh", ConnID, moduleStatus[ConnID].evseEnergyToBeDelivered);
         return true;
     }
     bool PLCController::Set_EVSEMinCurrent(uint8_t ConnID, float EVSEMinCurrent)
@@ -705,12 +708,17 @@ namespace PLCModule
     {
         // ChargeInfo
         moduleStatus[ConnID].controlPilotDuty = ControlPilotDuty::SNA;
+        ESP_LOGI("PLC", "Conn %d | controlPilotDuty = %d", ConnID, moduleStatus[ConnID].controlPilotDuty);
         moduleStatus[ConnID].controlPilotState = ControlPilotState::SNA;
+        ESP_LOGI("PLC", "Conn %d | controlPilotState = %d", ConnID, moduleStatus[ConnID].controlPilotState);
         moduleStatus[ConnID].proximityPinState = ProximityPinState::SNA;
         moduleStatus[ConnID].stateMachineState = StateMachineState::SNA;
+        ESP_LOGI("PLC", "Conn %d | stateMachineState = %d", ConnID, moduleStatus[ConnID].stateMachineState);
         moduleStatus[ConnID].actualChargeProtocol = ActualChargeProtocol::SNA;
+        ESP_LOGI("PLC", "Conn %d | actualChargeProtocol = %d", ConnID, moduleStatus[ConnID].actualChargeProtocol);
         moduleStatus[ConnID].AliveCounter = Constants::AliveCounter_SNA;
         moduleStatus[ConnID].tcpStatus = TCPStatus::SNA;
+        ESP_LOGI("PLC", "Conn %d | tcpStatus = %d", ConnID, moduleStatus[ConnID].tcpStatus);
         moduleStatus[ConnID].diodePresence = DiodePresence::SNA;
         moduleStatus[ConnID].cerValidationStatus = CerValidationStatus::SNA;
         moduleStatus[ConnID].sigValidationStatus = SigValidationStatus::SNA;
@@ -753,10 +761,14 @@ namespace PLCModule
 
         // DebugInfo
         moduleStatus[ConnID].pilotStatesStatus = PilotStatesStatus::SNA;
+        ESP_LOGI("PLC", "Conn %d | pilotStatesStatus = %d", ConnID, moduleStatus[ConnID].pilotStatesStatus);
         moduleStatus[ConnID].slacStatus = SLACStatus::SNA;
+        ESP_LOGI("PLC", "Conn %d | slacStatus = %d", ConnID, moduleStatus[ConnID].slacStatus);
         moduleStatus[ConnID].dinStatus = V2GStatusDIN::SNA;
         moduleStatus[ConnID].proximityPilotVoltage = Constants::ProximityPilotVoltage_SNA;
+        ESP_LOGI("PLC", "Conn %d | proximityPilotVoltage = %lu", ConnID, moduleStatus[ConnID].proximityPilotVoltage);
         moduleStatus[ConnID].controlPilotVoltage = Constants::ControlPilotVoltage_SNA;
+        ESP_LOGI("PLC", "Conn %d | controlPilotVoltage = %lu", ConnID, moduleStatus[ConnID].controlPilotVoltage);
         moduleStatus[ConnID].dcISO2_1_Status = V2GStatusDCISO2_1::SNA;
         moduleStatus[ConnID].acISO2_1_Status = V2GStatusACISO2_1::SNA;
 
@@ -769,19 +781,24 @@ namespace PLCModule
 
         // EVDCChargeTargets
         moduleStatus[ConnID].evTargetCurrent = static_cast<float>(Constants::EVTargetCurrent_SNA * Constants::CURRENT_SCALE);
+        ESP_LOGI("PLC", "Conn %d | evTargetCurrent = %.1fA", ConnID, moduleStatus[ConnID].evTargetCurrent);
         moduleStatus[ConnID].evTargetVoltage = static_cast<float>(Constants::EVTargetVoltage_SNA * Constants::VOLTAGE_SCALE);
+        ESP_LOGI("PLC", "Conn %d | evTargetVoltage = %.1fV", ConnID, moduleStatus[ConnID].evTargetVoltage);
         moduleStatus[ConnID].evPreChargeVoltage = static_cast<float>(Constants::EVPreChargeVoltage_SNA * Constants::VOLTAGE_SCALE);
 
         // EVStatusDisplay
         moduleStatus[ConnID].evSoC = static_cast<uint8_t>(Constants::EVSoC_SNA);
+        ESP_LOGI("PLC", "Conn %d | evSoC = %d%%", ConnID, moduleStatus[ConnID].evSoC);
         moduleStatus[ConnID].evChargingComplete = EVChargingComplete::SNA;
         moduleStatus[ConnID].evBulkChargingComplete = EVBulkChargingComplete::SNA;
         moduleStatus[ConnID].evErrorCode = EVErrorCode::SNA;
+        ESP_LOGI("PLC", "Conn %d | evErrorCode = %d", ConnID, moduleStatus[ConnID].evErrorCode);
         moduleStatus[ConnID].evCabinConditioning = EVCabinConditioning::SNA;
         moduleStatus[ConnID].evRESSConditioning = EVRESSConditioning::SNA;
         moduleStatus[ConnID].evTimeToBulkSoC = static_cast<uint32_t>(Constants::EVTimeToBulkSoC_SNA);
         moduleStatus[ConnID].evTimeToFullSoC = static_cast<uint32_t>(Constants::EVTimeToFullSoC_SNA);
         moduleStatus[ConnID].evReady = EVReady::SNA;
+        ESP_LOGI("PLC", "Conn %d | evReady = %d", ConnID, moduleStatus[ConnID].evReady);
         moduleStatus[ConnID].evRequestedETM = EVRequestedETM::SNA;
 
         // EVDCEnergyLimits
@@ -817,11 +834,15 @@ namespace PLCModule
         // moduleStatus[ConnID].EVSEPresentCurrent_ = 0.0f;
         // moduleStatus[ConnID].EVSEPresentVoltage_ = 0.0f;
         moduleStatus[ConnID].evsePresentCurrent = static_cast<float>(Constants::EVSEPresentCurrent_SNA * Constants::CURRENT_SCALE);
+        ESP_LOGI("PLC", "Conn %d | evsePresentCurrent = %.1fA", ConnID, moduleStatus[ConnID].evsePresentCurrent);
         moduleStatus[ConnID].evsePresentVoltage = static_cast<float>(Constants::EVSEPresentVoltage_SNA * Constants::VOLTAGE_SCALE);
+        ESP_LOGI("PLC", "Conn %d | evsePresentVoltage = %.1fV", ConnID, moduleStatus[ConnID].evsePresentVoltage);
         moduleStatus[ConnID].evseIsolationStatus = EVSEIsolationStatus::SNA;
+        ESP_LOGI("PLC", "Conn %d | evseIsolationStatus = %d", ConnID, moduleStatus[ConnID].evseIsolationStatus);
         moduleStatus[ConnID].evseFreeService = false;
         moduleStatus[ConnID].evseVoltageLimitAchieved = EVSEVoltageLimitAchieved::SNA;
         moduleStatus[ConnID].evseStatusCode = EVSEStatusCode::EVSE_CustomerNotReady;
+        ESP_LOGI("PLC", "Conn %d | evseStatusCode = %d", ConnID, moduleStatus[ConnID].evseStatusCode);
         moduleStatus[ConnID].evseCurrentLimitAchieved = EVSECurrentLimitAchieved::SNA;
         moduleStatus[ConnID].evsePowerLimitAchieved = EVSEPowerLimitAchieved::SNA;
         moduleStatus[ConnID].evseProcessingCA = EVSEProcessing::SNA;

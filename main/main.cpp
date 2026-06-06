@@ -16,7 +16,6 @@
 #include "EnergyModule.hpp"
 #include "NetworkModule.hpp"
 #include "PowerMuxModule.hpp"
-
 #define TAG "MAIN"
 
 bool SerialReceive(const SerialModule::PacketId id, uint8_t *data, uint16_t length)
@@ -148,6 +147,7 @@ extern "C" void app_main(void)
     {
         ESP_LOGI(TAG, "Config JSON string: %s", configData);
         cJSON *json = cJSON_Parse(configData);
+        (void)json;
         free(configData); // free immediately after parsing, cJSON has its own copy
         configData = NULL;
     }

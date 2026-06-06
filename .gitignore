@@ -1,0 +1,15 @@
+# ESP-IDF build output
+build/
+
+# ESP-IDF managed dependencies
+managed_components/
+
+# VS Code clang
+.clangd
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs
+*.log

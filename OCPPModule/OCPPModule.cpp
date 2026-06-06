@@ -12,7 +12,6 @@
 OCPPModule::OCPPController *ocpp;
 namespace OCPPModule
 {
-
     // Constructor
     OCPPController::OCPPController()
     {
@@ -105,6 +104,7 @@ namespace OCPPModule
         CPGetConfigurationResponse.HeartbeatInterval = 10;
         CPBootNotificationRequest.Sent = false;
         memset(&CPBootNotificationRequest, 0, sizeof(CPBootNotificationRequest));
+        memset(&CPStatusNotificationRequest, 0, sizeof(CPStatusNotificationRequest));
         memset(&CMSHeartbeatResponse, 0, sizeof(CMSHeartbeatResponse));
         memset(CMSRemoteStartTransactionRequest, 0, sizeof(CMSRemoteStartTransactionRequest));
         memset(CMSReserveNowRequest, 0, sizeof(CMSReserveNowRequest));
@@ -143,7 +143,13 @@ namespace OCPPModule
         {
             CPMeterValuesRequest[i].connectorId = i;
             CPMeterValuesRequest[i].transactionId = 123456;
-            memcpy(CPMeterValuesRequest[i].meterValue.timestamp, "2024-02-01T15:30:00", strlen("2024-02-01T15:30:00"));
+            CPStatusNotificationRequest[i].connectorId = i;
+            memcpy(CPStatusNotificationRequest[i].timestamp, "2026-05-05T09:30:14.871Z", strlen("2026-05-05T09:30:14.871Z"));
+            memcpy(CPStatusNotificationRequest[i].errorCode, "NoError", strlen("NoError"));
+            memcpy(CPStatusNotificationRequest[i].status, Unavailable, strlen(Unavailable));
+            memcpy(CPStatusNotificationRequest[i].info, "None", strlen("None"));
+            memcpy(CPStatusNotificationRequest[i].vendorErrorCode, "NoError", strlen("NoError"));
+            memcpy(CPMeterValuesRequest[i].meterValue.timestamp, "2026-05-05T09:30:14.871Z", strlen("2026-05-05T09:30:14.871Z"));
             memcpy(CPMeterValuesRequest[i].meterValue.sampledValue[0].context, "Sample.Periodic", strlen("Sample.Periodic"));
             memcpy(CPMeterValuesRequest[i].meterValue.sampledValue[0].format, "Raw", strlen("Raw"));
             memcpy(CPMeterValuesRequest[i].meterValue.sampledValue[0].location, "Outlet", strlen("Outlet"));
@@ -2862,25 +2868,27 @@ namespace OCPPModule
 
     esp_err_t OCPPController::read_config_ocpp(void)
     {
-        size_t bufferSize = 8192;
-        char *data = (char *)malloc(bufferSize);
-        if (data == NULL)
-            return ESP_FAIL;
+        char *ocppConfigData = NULL;
+        esp_err_t err = storage->read_config_ocpp(&ocppConfigData);
 
-        memset(data, 0, bufferSize);
-
-        esp_err_t err = storage->read_config_ocpp(data, bufferSize);
         if (err != ESP_OK)
         {
-            free(data);
+            free(ocppConfigData);
             return err;
         }
 
-        cJSON *json = cJSON_Parse(data);
-        free(data);
+        // TODO :remove later
+        ESP_LOGD(TAG, "READ :: OCPP Config JSON string: %s", ocppConfigData);
+
+        cJSON *json = cJSON_Parse(ocppConfigData);
+        free(ocppConfigData);
+        ocppConfigData = NULL;
 
         if (json == NULL)
+        {
+            ESP_LOGI(TAG, " Invalid config loaded from Flash");
             return ESP_FAIL;
+        }
 
         auto &cfg = CPGetConfigurationResponse;
 
@@ -2918,15 +2926,19 @@ namespace OCPPModule
         cfg.StopTxnSampledDataMaxLengthReadOnly = cJSON_GetObjectItem(json, "StopTxnSampledDataMaxLengthReadOnly")->valueint;
         cfg.SupportedFeatureProfilesMaxLengthReadOnly = cJSON_GetObjectItem(json, "SupportedFeatureProfilesMaxLengthReadOnly")->valueint;
         cfg.WebSocketPingIntervalReadOnly = cJSON_GetObjectItem(json, "WebSocketPingIntervalReadOnly")->valueint;
+
         cfg.LocalAuthListEnabledReadOnly = cJSON_GetObjectItem(json, "LocalAuthListEnabledReadOnly")->valueint;
         cfg.LocalAuthListMaxLengthReadOnly = cJSON_GetObjectItem(json, "LocalAuthListMaxLengthReadOnly")->valueint;
         cfg.SendLocalListMaxLengthReadOnly = cJSON_GetObjectItem(json, "SendLocalListMaxLengthReadOnly")->valueint;
+
         cfg.ReserveConnectorZeroSupportedReadOnly = cJSON_GetObjectItem(json, "ReserveConnectorZeroSupportedReadOnly")->valueint;
+
         cfg.ChargeProfileMaxStackLevelReadOnly = cJSON_GetObjectItem(json, "ChargeProfileMaxStackLevelReadOnly")->valueint;
         cfg.ChargingScheduleAllowedChargingRateUnitReadOnly = cJSON_GetObjectItem(json, "ChargingScheduleAllowedChargingRateUnitReadOnly")->valueint;
         cfg.ChargingScheduleMaxPeriodsReadOnly = cJSON_GetObjectItem(json, "ChargingScheduleMaxPeriodsReadOnly")->valueint;
         cfg.ConnectorSwitch3to1PhaseSupportedReadOnly = cJSON_GetObjectItem(json, "ConnectorSwitch3to1PhaseSupportedReadOnly")->valueint;
         cfg.MaxChargingProfilesInstalledReadOnly = cJSON_GetObjectItem(json, "MaxChargingProfilesInstalledReadOnly")->valueint;
+
         strcpy(cfg.AuthorizeRemoteTxRequestsValue, cJSON_GetObjectItem(json, "AuthorizeRemoteTxRequestsValue")->valuestring);
         strcpy(cfg.ClockAlignedDataIntervalValue, cJSON_GetObjectItem(json, "ClockAlignedDataIntervalValue")->valuestring);
         strcpy(cfg.ConnectionTimeOutValue, cJSON_GetObjectItem(json, "ConnectionTimeOutValue")->valuestring);
@@ -2961,15 +2973,19 @@ namespace OCPPModule
         strcpy(cfg.StopTxnSampledDataMaxLengthValue, cJSON_GetObjectItem(json, "StopTxnSampledDataMaxLengthValue")->valuestring);
         strcpy(cfg.SupportedFeatureProfilesMaxLengthValue, cJSON_GetObjectItem(json, "SupportedFeatureProfilesMaxLengthValue")->valuestring);
         strcpy(cfg.WebSocketPingIntervalValue, cJSON_GetObjectItem(json, "WebSocketPingIntervalValue")->valuestring);
+
         strcpy(cfg.LocalAuthListEnabledValue, cJSON_GetObjectItem(json, "LocalAuthListEnabledValue")->valuestring);
         strcpy(cfg.LocalAuthListMaxLengthValue, cJSON_GetObjectItem(json, "LocalAuthListMaxLengthValue")->valuestring);
         strcpy(cfg.SendLocalListMaxLengthValue, cJSON_GetObjectItem(json, "SendLocalListMaxLengthValue")->valuestring);
+
         strcpy(cfg.ReserveConnectorZeroSupportedValue, cJSON_GetObjectItem(json, "ReserveConnectorZeroSupportedValue")->valuestring);
+
         strcpy(cfg.ChargeProfileMaxStackLevelValue, cJSON_GetObjectItem(json, "ChargeProfileMaxStackLevelValue")->valuestring);
         strcpy(cfg.ChargingScheduleAllowedChargingRateUnitValue, cJSON_GetObjectItem(json, "ChargingScheduleAllowedChargingRateUnitValue")->valuestring);
         strcpy(cfg.ChargingScheduleMaxPeriodsValue, cJSON_GetObjectItem(json, "ChargingScheduleMaxPeriodsValue")->valuestring);
         strcpy(cfg.ConnectorSwitch3to1PhaseSupportedValue, cJSON_GetObjectItem(json, "ConnectorSwitch3to1PhaseSupportedValue")->valuestring);
         strcpy(cfg.MaxChargingProfilesInstalledValue, cJSON_GetObjectItem(json, "MaxChargingProfilesInstalledValue")->valuestring);
+
         cfg.AuthorizeRemoteTxRequests = cJSON_GetObjectItem(json, "AuthorizeRemoteTxRequests")->valueint;
         cfg.ClockAlignedDataInterval = cJSON_GetObjectItem(json, "ClockAlignedDataInterval")->valueint;
         cfg.ConnectionTimeOut = cJSON_GetObjectItem(json, "ConnectionTimeOut")->valueint;
@@ -2977,11 +2993,13 @@ namespace OCPPModule
         cfg.HeartbeatInterval = cJSON_GetObjectItem(json, "HeartbeatInterval")->valueint;
         cfg.LocalAuthorizeOffline = cJSON_GetObjectItem(json, "LocalAuthorizeOffline")->valueint;
         cfg.LocalPreAuthorize = cJSON_GetObjectItem(json, "LocalPreAuthorize")->valueint;
+
         cfg.MeterValueSampleInterval = cJSON_GetObjectItem(json, "MeterValueSampleInterval")->valueint;
         cfg.NumberOfConnectors = cJSON_GetObjectItem(json, "NumberOfConnectors")->valueint;
         cfg.ResetRetries = cJSON_GetObjectItem(json, "ResetRetries")->valueint;
         cfg.StopTransactionOnEVSideDisconnect = cJSON_GetObjectItem(json, "StopTransactionOnEVSideDisconnect")->valueint;
         cfg.StopTransactionOnInvalidId = cJSON_GetObjectItem(json, "StopTransactionOnInvalidId")->valueint;
+
         cfg.TransactionMessageAttempts = cJSON_GetObjectItem(json, "TransactionMessageAttempts")->valueint;
         cfg.TransactionMessageRetryInterval = cJSON_GetObjectItem(json, "TransactionMessageRetryInterval")->valueint;
         cfg.UnlockConnectorOnEVSideDisconnect = cJSON_GetObjectItem(json, "UnlockConnectorOnEVSideDisconnect")->valueint;
@@ -3008,108 +3026,123 @@ namespace OCPPModule
         cfg.MaxChargingProfilesInstalled = cJSON_GetObjectItem(json, "MaxChargingProfilesInstalled")->valueint;
 
         cJSON *mva = cJSON_GetObjectItem(json, "MeterValuesAlignedData");
-        cfg.MeterValuesAlignedData.EnergyActiveExportRegister = cJSON_GetObjectItem(mva, "EnergyActiveExportRegister")->valueint;
-        cfg.MeterValuesAlignedData.EnergyActiveImportRegister = cJSON_GetObjectItem(mva, "EnergyActiveImportRegister")->valueint;
-        cfg.MeterValuesAlignedData.EnergyReactiveExportRegister = cJSON_GetObjectItem(mva, "EnergyReactiveExportRegister")->valueint;
-        cfg.MeterValuesAlignedData.EnergyReactiveImportRegister = cJSON_GetObjectItem(mva, "EnergyReactiveImportRegister")->valueint;
-        cfg.MeterValuesAlignedData.EnergyActiveExportInterval = cJSON_GetObjectItem(mva, "EnergyActiveExportInterval")->valueint;
-        cfg.MeterValuesAlignedData.EnergyActiveImportInterval = cJSON_GetObjectItem(mva, "EnergyActiveImportInterval")->valueint;
-        cfg.MeterValuesAlignedData.EnergyReactiveExportInterval = cJSON_GetObjectItem(mva, "EnergyReactiveExportInterval")->valueint;
-        cfg.MeterValuesAlignedData.EnergyReactiveImportInterval = cJSON_GetObjectItem(mva, "EnergyReactiveImportInterval")->valueint;
-        cfg.MeterValuesAlignedData.PowerActiveExport = cJSON_GetObjectItem(mva, "PowerActiveExport")->valueint;
-        cfg.MeterValuesAlignedData.PowerActiveImport = cJSON_GetObjectItem(mva, "PowerActiveImport")->valueint;
-        cfg.MeterValuesAlignedData.PowerOffered = cJSON_GetObjectItem(mva, "PowerOffered")->valueint;
-        cfg.MeterValuesAlignedData.PowerReactiveExport = cJSON_GetObjectItem(mva, "PowerReactiveExport")->valueint;
-        cfg.MeterValuesAlignedData.PowerReactiveImport = cJSON_GetObjectItem(mva, "PowerReactiveImport")->valueint;
-        cfg.MeterValuesAlignedData.PowerFactor = cJSON_GetObjectItem(mva, "PowerFactor")->valueint;
-        cfg.MeterValuesAlignedData.CurrentImport = cJSON_GetObjectItem(mva, "CurrentImport")->valueint;
-        cfg.MeterValuesAlignedData.CurrentExport = cJSON_GetObjectItem(mva, "CurrentExport")->valueint;
-        cfg.MeterValuesAlignedData.CurrentOffered = cJSON_GetObjectItem(mva, "CurrentOffered")->valueint;
-        cfg.MeterValuesAlignedData.Voltage = cJSON_GetObjectItem(mva, "Voltage")->valueint;
-        cfg.MeterValuesAlignedData.Frequency = cJSON_GetObjectItem(mva, "Frequency")->valueint;
-        cfg.MeterValuesAlignedData.Temperature = cJSON_GetObjectItem(mva, "Temperature")->valueint;
-        cfg.MeterValuesAlignedData.SoC = cJSON_GetObjectItem(mva, "SoC")->valueint;
-        cfg.MeterValuesAlignedData.RPM = cJSON_GetObjectItem(mva, "RPM")->valueint;
+        if (mva != NULL)
+        {
+            cfg.MeterValuesAlignedData.EnergyActiveExportRegister = cJSON_GetObjectItem(mva, "EnergyActiveExportRegister")->valueint;
+            cfg.MeterValuesAlignedData.EnergyActiveImportRegister = cJSON_GetObjectItem(mva, "EnergyActiveImportRegister")->valueint;
+            cfg.MeterValuesAlignedData.EnergyReactiveExportRegister = cJSON_GetObjectItem(mva, "EnergyReactiveExportRegister")->valueint;
+            cfg.MeterValuesAlignedData.EnergyReactiveImportRegister = cJSON_GetObjectItem(mva, "EnergyReactiveImportRegister")->valueint;
+            cfg.MeterValuesAlignedData.EnergyActiveExportInterval = cJSON_GetObjectItem(mva, "EnergyActiveExportInterval")->valueint;
+            cfg.MeterValuesAlignedData.EnergyActiveImportInterval = cJSON_GetObjectItem(mva, "EnergyActiveImportInterval")->valueint;
+            cfg.MeterValuesAlignedData.EnergyReactiveExportInterval = cJSON_GetObjectItem(mva, "EnergyReactiveExportInterval")->valueint;
+            cfg.MeterValuesAlignedData.EnergyReactiveImportInterval = cJSON_GetObjectItem(mva, "EnergyReactiveImportInterval")->valueint;
+            cfg.MeterValuesAlignedData.PowerActiveExport = cJSON_GetObjectItem(mva, "PowerActiveExport")->valueint;
+            cfg.MeterValuesAlignedData.PowerActiveImport = cJSON_GetObjectItem(mva, "PowerActiveImport")->valueint;
+            cfg.MeterValuesAlignedData.PowerOffered = cJSON_GetObjectItem(mva, "PowerOffered")->valueint;
+            cfg.MeterValuesAlignedData.PowerReactiveExport = cJSON_GetObjectItem(mva, "PowerReactiveExport")->valueint;
+            cfg.MeterValuesAlignedData.PowerReactiveImport = cJSON_GetObjectItem(mva, "PowerReactiveImport")->valueint;
+            cfg.MeterValuesAlignedData.PowerFactor = cJSON_GetObjectItem(mva, "PowerFactor")->valueint;
+            cfg.MeterValuesAlignedData.CurrentImport = cJSON_GetObjectItem(mva, "CurrentImport")->valueint;
+            cfg.MeterValuesAlignedData.CurrentExport = cJSON_GetObjectItem(mva, "CurrentExport")->valueint;
+            cfg.MeterValuesAlignedData.CurrentOffered = cJSON_GetObjectItem(mva, "CurrentOffered")->valueint;
+            cfg.MeterValuesAlignedData.Voltage = cJSON_GetObjectItem(mva, "Voltage")->valueint;
+            cfg.MeterValuesAlignedData.Frequency = cJSON_GetObjectItem(mva, "Frequency")->valueint;
+            cfg.MeterValuesAlignedData.Temperature = cJSON_GetObjectItem(mva, "Temperature")->valueint;
+            cfg.MeterValuesAlignedData.SoC = cJSON_GetObjectItem(mva, "SoC")->valueint;
+            cfg.MeterValuesAlignedData.RPM = cJSON_GetObjectItem(mva, "RPM")->valueint;
+        }
 
         cJSON *mvs = cJSON_GetObjectItem(json, "MeterValuesSampledData");
-        cfg.MeterValuesSampledData.EnergyActiveExportRegister = cJSON_GetObjectItem(mvs, "EnergyActiveExportRegister")->valueint;
-        cfg.MeterValuesSampledData.EnergyActiveImportRegister = cJSON_GetObjectItem(mvs, "EnergyActiveImportRegister")->valueint;
-        cfg.MeterValuesSampledData.EnergyReactiveExportRegister = cJSON_GetObjectItem(mvs, "EnergyReactiveExportRegister")->valueint;
-        cfg.MeterValuesSampledData.EnergyReactiveImportRegister = cJSON_GetObjectItem(mvs, "EnergyReactiveImportRegister")->valueint;
-        cfg.MeterValuesSampledData.EnergyActiveExportInterval = cJSON_GetObjectItem(mvs, "EnergyActiveExportInterval")->valueint;
-        cfg.MeterValuesSampledData.EnergyActiveImportInterval = cJSON_GetObjectItem(mvs, "EnergyActiveImportInterval")->valueint;
-        cfg.MeterValuesSampledData.EnergyReactiveExportInterval = cJSON_GetObjectItem(mvs, "EnergyReactiveExportInterval")->valueint;
-        cfg.MeterValuesSampledData.EnergyReactiveImportInterval = cJSON_GetObjectItem(mvs, "EnergyReactiveImportInterval")->valueint;
-        cfg.MeterValuesSampledData.PowerActiveExport = cJSON_GetObjectItem(mvs, "PowerActiveExport")->valueint;
-        cfg.MeterValuesSampledData.PowerActiveImport = cJSON_GetObjectItem(mvs, "PowerActiveImport")->valueint;
-        cfg.MeterValuesSampledData.PowerOffered = cJSON_GetObjectItem(mvs, "PowerOffered")->valueint;
-        cfg.MeterValuesSampledData.PowerReactiveExport = cJSON_GetObjectItem(mvs, "PowerReactiveExport")->valueint;
-        cfg.MeterValuesSampledData.PowerReactiveImport = cJSON_GetObjectItem(mvs, "PowerReactiveImport")->valueint;
-        cfg.MeterValuesSampledData.PowerFactor = cJSON_GetObjectItem(mvs, "PowerFactor")->valueint;
-        cfg.MeterValuesSampledData.CurrentImport = cJSON_GetObjectItem(mvs, "CurrentImport")->valueint;
-        cfg.MeterValuesSampledData.CurrentExport = cJSON_GetObjectItem(mvs, "CurrentExport")->valueint;
-        cfg.MeterValuesSampledData.CurrentOffered = cJSON_GetObjectItem(mvs, "CurrentOffered")->valueint;
-        cfg.MeterValuesSampledData.Voltage = cJSON_GetObjectItem(mvs, "Voltage")->valueint;
-        cfg.MeterValuesSampledData.Frequency = cJSON_GetObjectItem(mvs, "Frequency")->valueint;
-        cfg.MeterValuesSampledData.Temperature = cJSON_GetObjectItem(mvs, "Temperature")->valueint;
-        cfg.MeterValuesSampledData.SoC = cJSON_GetObjectItem(mvs, "SoC")->valueint;
-        cfg.MeterValuesSampledData.RPM = cJSON_GetObjectItem(mvs, "RPM")->valueint;
+        if (mvs != NULL)
+        {
+            cfg.MeterValuesSampledData.EnergyActiveExportRegister = cJSON_GetObjectItem(mvs, "EnergyActiveExportRegister")->valueint;
+            cfg.MeterValuesSampledData.EnergyActiveImportRegister = cJSON_GetObjectItem(mvs, "EnergyActiveImportRegister")->valueint;
+            cfg.MeterValuesSampledData.EnergyReactiveExportRegister = cJSON_GetObjectItem(mvs, "EnergyReactiveExportRegister")->valueint;
+            cfg.MeterValuesSampledData.EnergyReactiveImportRegister = cJSON_GetObjectItem(mvs, "EnergyReactiveImportRegister")->valueint;
+            cfg.MeterValuesSampledData.EnergyActiveExportInterval = cJSON_GetObjectItem(mvs, "EnergyActiveExportInterval")->valueint;
+            cfg.MeterValuesSampledData.EnergyActiveImportInterval = cJSON_GetObjectItem(mvs, "EnergyActiveImportInterval")->valueint;
+            cfg.MeterValuesSampledData.EnergyReactiveExportInterval = cJSON_GetObjectItem(mvs, "EnergyReactiveExportInterval")->valueint;
+            cfg.MeterValuesSampledData.EnergyReactiveImportInterval = cJSON_GetObjectItem(mvs, "EnergyReactiveImportInterval")->valueint;
+            cfg.MeterValuesSampledData.PowerActiveExport = cJSON_GetObjectItem(mvs, "PowerActiveExport")->valueint;
+            cfg.MeterValuesSampledData.PowerActiveImport = cJSON_GetObjectItem(mvs, "PowerActiveImport")->valueint;
+            cfg.MeterValuesSampledData.PowerOffered = cJSON_GetObjectItem(mvs, "PowerOffered")->valueint;
+            cfg.MeterValuesSampledData.PowerReactiveExport = cJSON_GetObjectItem(mvs, "PowerReactiveExport")->valueint;
+            cfg.MeterValuesSampledData.PowerReactiveImport = cJSON_GetObjectItem(mvs, "PowerReactiveImport")->valueint;
+            cfg.MeterValuesSampledData.PowerFactor = cJSON_GetObjectItem(mvs, "PowerFactor")->valueint;
+            cfg.MeterValuesSampledData.CurrentImport = cJSON_GetObjectItem(mvs, "CurrentImport")->valueint;
+            cfg.MeterValuesSampledData.CurrentExport = cJSON_GetObjectItem(mvs, "CurrentExport")->valueint;
+            cfg.MeterValuesSampledData.CurrentOffered = cJSON_GetObjectItem(mvs, "CurrentOffered")->valueint;
+            cfg.MeterValuesSampledData.Voltage = cJSON_GetObjectItem(mvs, "Voltage")->valueint;
+            cfg.MeterValuesSampledData.Frequency = cJSON_GetObjectItem(mvs, "Frequency")->valueint;
+            cfg.MeterValuesSampledData.Temperature = cJSON_GetObjectItem(mvs, "Temperature")->valueint;
+            cfg.MeterValuesSampledData.SoC = cJSON_GetObjectItem(mvs, "SoC")->valueint;
+            cfg.MeterValuesSampledData.RPM = cJSON_GetObjectItem(mvs, "RPM")->valueint;
+        }
 
-        CJSON *sta = cJSON_GetObjectItem(json, "StopTxnAlignedData");
-        cfg.StopTxnAlignedData.EnergyActiveExportRegister = cJSON_GetObjectItem(sta, "EnergyActiveExportRegister")->valueint;
-        cfg.StopTxnAlignedData.EnergyActiveImportRegister = cJSON_GetObjectItem(sta, "EnergyActiveImportRegister")->valueint;
-        cfg.StopTxnAlignedData.EnergyReactiveExportRegister = cJSON_GetObjectItem(sta, "EnergyReactiveExportRegister")->valueint;
-        cfg.StopTxnAlignedData.EnergyReactiveImportRegister = cJSON_GetObjectItem(sta, "EnergyReactiveImportRegister")->valueint;
-        cfg.StopTxnAlignedData.EnergyActiveExportInterval = cJSON_GetObjectItem(sta, "EnergyActiveExportInterval")->valueint;
-        cfg.StopTxnAlignedData.EnergyActiveImportInterval = cJSON_GetObjectItem(sta, "EnergyActiveImportInterval")->valueint;
-        cfg.StopTxnAlignedData.EnergyReactiveExportInterval = cJSON_GetObjectItem(sta, "EnergyReactiveExportInterval")->valueint;
-        cfg.StopTxnAlignedData.EnergyReactiveImportInterval = cJSON_GetObjectItem(sta, "EnergyReactiveImportInterval")->valueint;
-        cfg.StopTxnAlignedData.PowerActiveExport = cJSON_GetObjectItem(sta, "PowerActiveExport")->valueint;
-        cfg.StopTxnAlignedData.PowerActiveImport = cJSON_GetObjectItem(sta, "PowerActiveImport")->valueint;
-        cfg.StopTxnAlignedData.PowerOffered = cJSON_GetObjectItem(sta, "PowerOffered")->valueint;
-        cfg.StopTxnAlignedData.PowerReactiveExport = cJSON_GetObjectItem(sta, "PowerReactiveExport")->valueint;
-        cfg.StopTxnAlignedData.PowerReactiveImport = cJSON_GetObjectItem(sta, "PowerReactiveImport")->valueint;
-        cfg.StopTxnAlignedData.PowerFactor = cJSON_GetObjectItem(sta, "PowerFactor")->valueint;
-        cfg.StopTxnAlignedData.CurrentImport = cJSON_GetObjectItem(sta, "CurrentImport")->valueint;
-        cfg.StopTxnAlignedData.CurrentExport = cJSON_GetObjectItem(sta, "CurrentExport")->valueint;
-        cfg.StopTxnAlignedData.CurrentOffered = cJSON_GetObjectItem(sta, "CurrentOffered")->valueint;
-        cfg.StopTxnAlignedData.Voltage = cJSON_GetObjectItem(sta, "Voltage")->valueint;
-        cfg.StopTxnAlignedData.Frequency = cJSON_GetObjectItem(sta, "Frequency")->valueint;
-        cfg.StopTxnAlignedData.Temperature = cJSON_GetObjectItem(sta, "Temperature")->valueint;
-        cfg.StopTxnAlignedData.SoC = cJSON_GetObjectItem(sta, "SoC")->valueint;
-        cfg.StopTxnAlignedData.RPM = cJSON_GetObjectItem(sta, "RPM")->valueint;
+        cJSON *sta = cJSON_GetObjectItem(json, "StopTxnAlignedData");
+        if (sta != NULL)
+        {
+            cfg.StopTxnAlignedData.EnergyActiveExportRegister = cJSON_GetObjectItem(sta, "EnergyActiveExportRegister")->valueint;
+            cfg.StopTxnAlignedData.EnergyActiveImportRegister = cJSON_GetObjectItem(sta, "EnergyActiveImportRegister")->valueint;
+            cfg.StopTxnAlignedData.EnergyReactiveExportRegister = cJSON_GetObjectItem(sta, "EnergyReactiveExportRegister")->valueint;
+            cfg.StopTxnAlignedData.EnergyReactiveImportRegister = cJSON_GetObjectItem(sta, "EnergyReactiveImportRegister")->valueint;
+            cfg.StopTxnAlignedData.EnergyActiveExportInterval = cJSON_GetObjectItem(sta, "EnergyActiveExportInterval")->valueint;
+            cfg.StopTxnAlignedData.EnergyActiveImportInterval = cJSON_GetObjectItem(sta, "EnergyActiveImportInterval")->valueint;
+            cfg.StopTxnAlignedData.EnergyReactiveExportInterval = cJSON_GetObjectItem(sta, "EnergyReactiveExportInterval")->valueint;
+            cfg.StopTxnAlignedData.EnergyReactiveImportInterval = cJSON_GetObjectItem(sta, "EnergyReactiveImportInterval")->valueint;
+            cfg.StopTxnAlignedData.PowerActiveExport = cJSON_GetObjectItem(sta, "PowerActiveExport")->valueint;
+            cfg.StopTxnAlignedData.PowerActiveImport = cJSON_GetObjectItem(sta, "PowerActiveImport")->valueint;
+            cfg.StopTxnAlignedData.PowerOffered = cJSON_GetObjectItem(sta, "PowerOffered")->valueint;
+            cfg.StopTxnAlignedData.PowerReactiveExport = cJSON_GetObjectItem(sta, "PowerReactiveExport")->valueint;
+            cfg.StopTxnAlignedData.PowerReactiveImport = cJSON_GetObjectItem(sta, "PowerReactiveImport")->valueint;
+            cfg.StopTxnAlignedData.PowerFactor = cJSON_GetObjectItem(sta, "PowerFactor")->valueint;
+            cfg.StopTxnAlignedData.CurrentImport = cJSON_GetObjectItem(sta, "CurrentImport")->valueint;
+            cfg.StopTxnAlignedData.CurrentExport = cJSON_GetObjectItem(sta, "CurrentExport")->valueint;
+            cfg.StopTxnAlignedData.CurrentOffered = cJSON_GetObjectItem(sta, "CurrentOffered")->valueint;
+            cfg.StopTxnAlignedData.Voltage = cJSON_GetObjectItem(sta, "Voltage")->valueint;
+            cfg.StopTxnAlignedData.Frequency = cJSON_GetObjectItem(sta, "Frequency")->valueint;
+            cfg.StopTxnAlignedData.Temperature = cJSON_GetObjectItem(sta, "Temperature")->valueint;
+            cfg.StopTxnAlignedData.SoC = cJSON_GetObjectItem(sta, "SoC")->valueint;
+            cfg.StopTxnAlignedData.RPM = cJSON_GetObjectItem(sta, "RPM")->valueint;
+        }
 
-        CJSON *sts = cJSON_GetObjectItem(json, "StopTxnSampledData");
-        cfg.StopTxnSampledData.EnergyActiveExportRegister = cJSON_GetObjectItem(sts, "EnergyActiveExportRegister")->valueint;
-        cfg.StopTxnSampledData.EnergyActiveImportRegister = cJSON_GetObjectItem(sts, "EnergyActiveImportRegister")->valueint;
-        cfg.StopTxnSampledData.EnergyReactiveExportRegister = cJSON_GetObjectItem(sts, "EnergyReactiveExportRegister")->valueint;
-        cfg.StopTxnSampledData.EnergyReactiveImportRegister = cJSON_GetObjectItem(sts, "EnergyReactiveImportRegister")->valueint;
-        cfg.StopTxnSampledData.EnergyActiveExportInterval = cJSON_GetObjectItem(sts, "EnergyActiveExportInterval")->valueint;
-        cfg.StopTxnSampledData.EnergyActiveImportInterval = cJSON_GetObjectItem(sts, "EnergyActiveImportInterval")->valueint;
-        cfg.StopTxnSampledData.EnergyReactiveExportInterval = cJSON_GetObjectItem(sts, "EnergyReactiveExportInterval")->valueint;
-        cfg.StopTxnSampledData.EnergyReactiveImportInterval = cJSON_GetObjectItem(sts, "EnergyReactiveImportInterval")->valueint;
-        cfg.StopTxnSampledData.PowerActiveExport = cJSON_GetObjectItem(sts, "PowerActiveExport")->valueint;
-        cfg.StopTxnSampledData.PowerActiveImport = cJSON_GetObjectItem(sts, "PowerActiveImport")->valueint;
-        cfg.StopTxnSampledData.PowerOffered = cJSON_GetObjectItem(sts, "PowerOffered")->valueint;
-        cfg.StopTxnSampledData.PowerReactiveExport = cJSON_GetObjectItem(sts, "PowerReactiveExport")->valueint;
-        cfg.StopTxnSampledData.PowerReactiveImport = cJSON_GetObjectItem(sts, "PowerReactiveImport")->valueint;
-        cfg.StopTxnSampledData.PowerFactor = cJSON_GetObjectItem(sts, "PowerFactor")->valueint;
-        cfg.StopTxnSampledData.CurrentImport = cJSON_GetObjectItem(sts, "CurrentImport")->valueint;
-        cfg.StopTxnSampledData.CurrentExport = cJSON_GetObjectItem(sts, "CurrentExport")->valueint;
-        cfg.StopTxnSampledData.CurrentOffered = cJSON_GetObjectItem(sts, "CurrentOffered")->valueint;
-        cfg.StopTxnSampledData.Voltage = cJSON_GetObjectItem(sts, "Voltage")->valueint;
-        cfg.StopTxnSampledData.Frequency = cJSON_GetObjectItem(sts, "Frequency")->valueint;
-        cfg.StopTxnSampledData.Temperature = cJSON_GetObjectItem(sts, "Temperature")->valueint;
-        cfg.StopTxnSampledData.SoC = cJSON_GetObjectItem(sts, "SoC")->valueint;
-        cfg.StopTxnSampledData.RPM = cJSON_GetObjectItem(sts, "RPM")->valueint;
+        cJSON *sts = cJSON_GetObjectItem(json, "StopTxnSampledData");
+        if (sts != NULL)
+        {
+            cfg.StopTxnSampledData.EnergyActiveExportRegister = cJSON_GetObjectItem(sts, "EnergyActiveExportRegister")->valueint;
+            cfg.StopTxnSampledData.EnergyActiveImportRegister = cJSON_GetObjectItem(sts, "EnergyActiveImportRegister")->valueint;
+            cfg.StopTxnSampledData.EnergyReactiveExportRegister = cJSON_GetObjectItem(sts, "EnergyReactiveExportRegister")->valueint;
+            cfg.StopTxnSampledData.EnergyReactiveImportRegister = cJSON_GetObjectItem(sts, "EnergyReactiveImportRegister")->valueint;
+            cfg.StopTxnSampledData.EnergyActiveExportInterval = cJSON_GetObjectItem(sts, "EnergyActiveExportInterval")->valueint;
+            cfg.StopTxnSampledData.EnergyActiveImportInterval = cJSON_GetObjectItem(sts, "EnergyActiveImportInterval")->valueint;
+            cfg.StopTxnSampledData.EnergyReactiveExportInterval = cJSON_GetObjectItem(sts, "EnergyReactiveExportInterval")->valueint;
+            cfg.StopTxnSampledData.EnergyReactiveImportInterval = cJSON_GetObjectItem(sts, "EnergyReactiveImportInterval")->valueint;
+            cfg.StopTxnSampledData.PowerActiveExport = cJSON_GetObjectItem(sts, "PowerActiveExport")->valueint;
+            cfg.StopTxnSampledData.PowerActiveImport = cJSON_GetObjectItem(sts, "PowerActiveImport")->valueint;
+            cfg.StopTxnSampledData.PowerOffered = cJSON_GetObjectItem(sts, "PowerOffered")->valueint;
+            cfg.StopTxnSampledData.PowerReactiveExport = cJSON_GetObjectItem(sts, "PowerReactiveExport")->valueint;
+            cfg.StopTxnSampledData.PowerReactiveImport = cJSON_GetObjectItem(sts, "PowerReactiveImport")->valueint;
+            cfg.StopTxnSampledData.PowerFactor = cJSON_GetObjectItem(sts, "PowerFactor")->valueint;
+            cfg.StopTxnSampledData.CurrentImport = cJSON_GetObjectItem(sts, "CurrentImport")->valueint;
+            cfg.StopTxnSampledData.CurrentExport = cJSON_GetObjectItem(sts, "CurrentExport")->valueint;
+            cfg.StopTxnSampledData.CurrentOffered = cJSON_GetObjectItem(sts, "CurrentOffered")->valueint;
+            cfg.StopTxnSampledData.Voltage = cJSON_GetObjectItem(sts, "Voltage")->valueint;
+            cfg.StopTxnSampledData.Frequency = cJSON_GetObjectItem(sts, "Frequency")->valueint;
+            cfg.StopTxnSampledData.Temperature = cJSON_GetObjectItem(sts, "Temperature")->valueint;
+            cfg.StopTxnSampledData.SoC = cJSON_GetObjectItem(sts, "SoC")->valueint;
+            cfg.StopTxnSampledData.RPM = cJSON_GetObjectItem(sts, "RPM")->valueint;
+        }
 
         cJSON *profiles = cJSON_GetObjectItem(json, "SupportedFeatureProfiles");
-        cfg.SupportedFeatureProfiles.Core = cJSON_GetObjectItem(profiles, "Core")->valueint;
-        cfg.SupportedFeatureProfiles.LocalAuthListManagement = cJSON_GetObjectItem(profiles, "LocalAuthListManagement")->valueint;
-        cfg.SupportedFeatureProfiles.Reservation = cJSON_GetObjectItem(profiles, "Reservation")->valueint;
-        cfg.SupportedFeatureProfiles.RemoteTrigger = cJSON_GetObjectItem(profiles, "RemoteTrigger")->valueint;
-        cfg.SupportedFeatureProfiles.FirmwareManagement = cJSON_GetObjectItem(profiles, "FirmwareManagement")->valueint;
-        cfg.SupportedFeatureProfiles.SmartCharging = cJSON_GetObjectItem(profiles, "SmartCharging")->valueint;
+        if (profiles != NULL)
+        {
+            cfg.SupportedFeatureProfiles.Core = cJSON_GetObjectItem(profiles, "Core")->valueint;
+            cfg.SupportedFeatureProfiles.LocalAuthListManagement = cJSON_GetObjectItem(profiles, "LocalAuthListManagement")->valueint;
+            cfg.SupportedFeatureProfiles.Reservation = cJSON_GetObjectItem(profiles, "Reservation")->valueint;
+            cfg.SupportedFeatureProfiles.RemoteTrigger = cJSON_GetObjectItem(profiles, "RemoteTrigger")->valueint;
+            cfg.SupportedFeatureProfiles.FirmwareManagement = cJSON_GetObjectItem(profiles, "FirmwareManagement")->valueint;
+            cfg.SupportedFeatureProfiles.SmartCharging = cJSON_GetObjectItem(profiles, "SmartCharging")->valueint;
+        }
 
         cJSON_Delete(json);
         return ESP_OK;
@@ -3117,9 +3150,14 @@ namespace OCPPModule
 
     esp_err_t OCPPController::write_config_ocpp(void)
     {
+        // return ESP_OK; // ToDo storage->write_config_ocpp((uint8_t *)&CPGetConfigurationResponse, sizeof(OCPPModule::CPGetConfigurationResponse_t));
+
         cJSON *json = cJSON_CreateObject();
         if (json == NULL)
+        {
+            ESP_LOGE(TAG, "Failed to create JSON");
             return ESP_FAIL;
+        }
 
         auto &cfg = CPGetConfigurationResponse;
 
@@ -3166,6 +3204,7 @@ namespace OCPPModule
         cJSON_AddBoolToObject(json, "ChargingScheduleMaxPeriodsReadOnly", cfg.ChargingScheduleMaxPeriodsReadOnly);
         cJSON_AddBoolToObject(json, "ConnectorSwitch3to1PhaseSupportedReadOnly", cfg.ConnectorSwitch3to1PhaseSupportedReadOnly);
         cJSON_AddBoolToObject(json, "MaxChargingProfilesInstalledReadOnly", cfg.MaxChargingProfilesInstalledReadOnly);
+
         cJSON_AddStringToObject(json, "AuthorizeRemoteTxRequestsValue", cfg.AuthorizeRemoteTxRequestsValue);
         cJSON_AddStringToObject(json, "ClockAlignedDataIntervalValue", cfg.ClockAlignedDataIntervalValue);
         cJSON_AddStringToObject(json, "ConnectionTimeOutValue", cfg.ConnectionTimeOutValue);
@@ -3209,6 +3248,7 @@ namespace OCPPModule
         cJSON_AddStringToObject(json, "ChargingScheduleMaxPeriodsValue", cfg.ChargingScheduleMaxPeriodsValue);
         cJSON_AddStringToObject(json, "ConnectorSwitch3to1PhaseSupportedValue", cfg.ConnectorSwitch3to1PhaseSupportedValue);
         cJSON_AddStringToObject(json, "MaxChargingProfilesInstalledValue", cfg.MaxChargingProfilesInstalledValue);
+
         cJSON_AddBoolToObject(json, "AuthorizeRemoteTxRequests", cfg.AuthorizeRemoteTxRequests);
         cJSON_AddNumberToObject(json, "ClockAlignedDataInterval", cfg.ClockAlignedDataInterval);
         cJSON_AddNumberToObject(json, "ConnectionTimeOut", cfg.ConnectionTimeOut);
@@ -3236,6 +3276,7 @@ namespace OCPPModule
         cJSON_AddNumberToObject(json, "StopTxnAlignedDataMaxLength", cfg.StopTxnAlignedDataMaxLength);
         cJSON_AddNumberToObject(json, "StopTxnSampledDataMaxLength", cfg.StopTxnSampledDataMaxLength);
         cJSON_AddNumberToObject(json, "SupportedFeatureProfilesMaxLength", cfg.SupportedFeatureProfilesMaxLength);
+        cJSON_AddNumberToObject(json, "WebSocketPingInterval", cfg.WebSocketPingInterval);
         cJSON_AddBoolToObject(json, "LocalAuthListEnabled", cfg.LocalAuthListEnabled);
         cJSON_AddNumberToObject(json, "LocalAuthListMaxLength", cfg.LocalAuthListMaxLength);
         cJSON_AddNumberToObject(json, "SendLocalListMaxLength", cfg.SendLocalListMaxLength);
@@ -3246,6 +3287,8 @@ namespace OCPPModule
         cJSON_AddNumberToObject(json, "MaxChargingProfilesInstalled", cfg.MaxChargingProfilesInstalled);
 
         cJSON *mva = cJSON_CreateObject();
+        if (mva == NULL)
+            return ESP_FAIL;
         cJSON_AddBoolToObject(mva, "EnergyActiveExportRegister", cfg.MeterValuesAlignedData.EnergyActiveExportRegister);
         cJSON_AddBoolToObject(mva, "EnergyActiveImportRegister", cfg.MeterValuesAlignedData.EnergyActiveImportRegister);
         cJSON_AddBoolToObject(mva, "EnergyReactiveExportRegister", cfg.MeterValuesAlignedData.EnergyReactiveExportRegister);
@@ -3271,6 +3314,8 @@ namespace OCPPModule
         cJSON_AddItemToObject(json, "MeterValuesAlignedData", mva);
 
         cJSON *mvs = cJSON_CreateObject();
+        if (mvs == NULL)
+            return ESP_FAIL;
         cJSON_AddBoolToObject(mvs, "EnergyActiveExportRegister", cfg.MeterValuesSampledData.EnergyActiveExportRegister);
         cJSON_AddBoolToObject(mvs, "EnergyActiveImportRegister", cfg.MeterValuesSampledData.EnergyActiveImportRegister);
         cJSON_AddBoolToObject(mvs, "EnergyReactiveExportRegister", cfg.MeterValuesSampledData.EnergyReactiveExportRegister);
@@ -3296,6 +3341,8 @@ namespace OCPPModule
         cJSON_AddItemToObject(json, "MeterValuesSampledData", mvs);
 
         cJSON *sta = cJSON_CreateObject();
+        if (sta == NULL)
+            return ESP_FAIL;
         cJSON_AddBoolToObject(sta, "EnergyActiveExportRegister", cfg.StopTxnAlignedData.EnergyActiveExportRegister);
         cJSON_AddBoolToObject(sta, "EnergyActiveImportRegister", cfg.StopTxnAlignedData.EnergyActiveImportRegister);
         cJSON_AddBoolToObject(sta, "EnergyReactiveExportRegister", cfg.StopTxnAlignedData.EnergyReactiveExportRegister);
@@ -3321,6 +3368,8 @@ namespace OCPPModule
         cJSON_AddItemToObject(json, "StopTxnAlignedData", sta);
 
         cJSON *sts = cJSON_CreateObject();
+        if (sts == NULL)
+            return ESP_FAIL;
         cJSON_AddBoolToObject(sts, "EnergyActiveExportRegister", cfg.StopTxnSampledData.EnergyActiveExportRegister);
         cJSON_AddBoolToObject(sts, "EnergyActiveImportRegister", cfg.StopTxnSampledData.EnergyActiveImportRegister);
         cJSON_AddBoolToObject(sts, "EnergyReactiveExportRegister", cfg.StopTxnSampledData.EnergyReactiveExportRegister);
@@ -3346,6 +3395,8 @@ namespace OCPPModule
         cJSON_AddItemToObject(json, "StopTxnSampledData", sts);
 
         cJSON *profiles = cJSON_CreateObject();
+        if (profiles == NULL)
+            return ESP_FAIL;
         cJSON_AddBoolToObject(profiles, "Core", cfg.SupportedFeatureProfiles.Core);
         cJSON_AddBoolToObject(profiles, "LocalAuthListManagement", cfg.SupportedFeatureProfiles.LocalAuthListManagement);
         cJSON_AddBoolToObject(profiles, "Reservation", cfg.SupportedFeatureProfiles.Reservation);
@@ -3354,80 +3405,51 @@ namespace OCPPModule
         cJSON_AddBoolToObject(profiles, "SmartCharging", cfg.SupportedFeatureProfiles.SmartCharging);
         cJSON_AddItemToObject(json, "SupportedFeatureProfiles", profiles);
 
-        char *data = cJSON_PrintUnformatted(json);
-        if (data == NULL)
+        char *jsonString = cJSON_PrintUnformatted(json);
+        cJSON_Delete(json);
+
+        if (jsonString == NULL)
         {
-            cJSON_Delete(json);
             return ESP_FAIL;
         }
-
-        esp_err_t err = storage->write_config_ocpp(data);
-
-        free(data);
-        cJSON_Delete(json);
+        ESP_LOGD(TAG, "OCPP CONFIG WRITE: %s", jsonString);
+        esp_err_t err = storage->write_config_ocpp(jsonString);
+        free(jsonString);
 
         return err;
     }
 
     esp_err_t OCPPController::read_localist(void)
     {
-        size_t bufferSize = 4096;
-        char *data = (char *)malloc(bufferSize);
-        if (data == NULL)
-            return ESP_FAIL;
-
-        memset(data, 0, bufferSize);
-
-        esp_err_t err = storage->read_localist(data, bufferSize);
+        char *localListData = NULL;
+        esp_err_t err = storage->read_localist(&localListData);
         if (err != ESP_OK)
         {
-            free(data);
-            return err;
+            free(localListData);
         }
-
-        cJSON *json = cJSON_Parse(data);
-        free(data);
-
-        if (json == NULL)
-            return ESP_FAIL;
-
-        auto &cfg = CMSSendLocalListRequest;
-
-        cfg.listVersion = cJSON_GetObjectItem(json, "listVersion")->valueint;
-        strcpy(cfg.updateType, cJSON_GetObjectItem(json, "updateType")->valuestring);
-        strcpy(cfg.UniqId, cJSON_GetObjectItem(json, "UniqId")->valuestring);
-        cfg.Received = cJSON_GetObjectItem(json, "Received")->valueint;
-
-        cJSON *listArray = cJSON_GetObjectItem(json, "localAuthorizationList");
-
-        for (int i = 0; i < LOCAL_LIST_COUNT; i++)
+        else
         {
-            cJSON *item = cJSON_GetArrayItem(listArray, i);
-
-            cfg.localAuthorizationList[i].idTagPresent =
-                cJSON_GetObjectItem(item, "idTagPresent")->valueint;
-
-            strcpy(cfg.localAuthorizationList[i].idTag,
-                   cJSON_GetObjectItem(item, "idTag")->valuestring);
-
-            cJSON *info = cJSON_GetObjectItem(item, "idTagInfo");
-
-            strcpy(cfg.localAuthorizationList[i].idTagInfo.expiryDate,
-                   cJSON_GetObjectItem(info, "expiryDate")->valuestring);
-
-            strcpy(cfg.localAuthorizationList[i].idTagInfo.parentidTag,
-                   cJSON_GetObjectItem(info, "parentidTag")->valuestring);
-
-            strcpy(cfg.localAuthorizationList[i].idTagInfo.status,
-                   cJSON_GetObjectItem(info, "status")->valuestring);
+            ESP_LOGI(TAG, "READ : Printing Local List : %s", localListData);
         }
 
-        cJSON_Delete(json);
-        return ESP_OK;
+        // Debug log of Local List raw JSON string read from storage
+
+        for (uint32_t i = 0; i < LOCAL_LIST_COUNT; i++)
+        {
+            if (CMSSendLocalListRequest.localAuthorizationList[i].idTagPresent)
+            {
+                ESP_LOGI(TAG, "CMS Local List Tag%ld : %s", i, CMSSendLocalListRequest.localAuthorizationList[i].idTag);
+            }
+        }
+
+        printLocalList();
+        return err;
     }
 
     esp_err_t OCPPController::write_localist(void)
     {
+        // return ESP_OK; // ToDo storage->write_localist((uint8_t *)&CMSSendLocalListRequest, sizeof(OCPPModule::CMSSendLocalListRequest_t));
+
         cJSON *json = cJSON_CreateObject();
         if (json == NULL)
             return ESP_FAIL;
@@ -3440,77 +3462,131 @@ namespace OCPPModule
         cJSON_AddBoolToObject(json, "Received", cfg.Received);
 
         cJSON *listArray = cJSON_CreateArray();
-
-        for (int i = 0; i < LOCAL_LIST_COUNT; i++)
-        {
-            cJSON *item = cJSON_CreateObject();
-            cJSON_AddBoolToObject(item, "idTagPresent", cfg.localAuthorizationList[i].idTagPresent);
-            cJSON_AddStringToObject(item, "idTag", cfg.localAuthorizationList[i].idTag);
-
-            cJSON *info = cJSON_CreateObject();
-            cJSON_AddStringToObject(info, "expiryDate", cfg.localAuthorizationList[i].idTagInfo.expiryDate);
-            cJSON_AddStringToObject(info, "parentidTag", cfg.localAuthorizationList[i].idTagInfo.parentidTag);
-            cJSON_AddStringToObject(info, "status", cfg.localAuthorizationList[i].idTagInfo.status);
-            cJSON_AddItemToObject(item, "idTagInfo", info);
-            cJSON_AddItemToArray(listArray, item);
-        }
-
-        cJSON_AddItemToObject(json, "localAuthorizationList", listArray);
-
-        char *data = cJSON_PrintUnformatted(json);
-        if (data == NULL)
+        if (listArray == NULL)
         {
             cJSON_Delete(json);
             return ESP_FAIL;
         }
+        for (int i = 0; i < LOCAL_LIST_COUNT; i++)
+        {
+            cJSON *arrayItem = cJSON_CreateObject();
+            if (arrayItem == NULL)
+            {
+                cJSON_Delete(json);
+                return ESP_FAIL;
+            }
+            cJSON_AddBoolToObject(arrayItem, "idTagPresent", cfg.localAuthorizationList[i].idTagPresent);
+            cJSON_AddStringToObject(arrayItem, "idTag", cfg.localAuthorizationList[i].idTag);
 
-        esp_err_t err = storage->write_localist(data);
+            cJSON *idTagInfo = cJSON_CreateObject();
+            if (idTagInfo == NULL)
+            {
+                cJSON_Delete(json);
+                return ESP_FAIL;
+            }
+            cJSON_AddStringToObject(idTagInfo, "expiryDate", cfg.localAuthorizationList[i].idTagInfo.expiryDate);
+            cJSON_AddStringToObject(idTagInfo, "parentidTag", cfg.localAuthorizationList[i].idTagInfo.parentidTag);
+            cJSON_AddStringToObject(idTagInfo, "status", cfg.localAuthorizationList[i].idTagInfo.status);
+            cJSON_AddItemToObject(arrayItem, "idTagInfo", idTagInfo);
 
-        free(data);
+            cJSON_AddItemToArray(listArray, arrayItem);
+        }
+        cJSON_AddItemToObject(json, "localAuthorizationList", listArray);
+
+        char *jsonString = cJSON_PrintUnformatted(json);
         cJSON_Delete(json);
+
+        if (jsonString == NULL)
+        {
+            return ESP_FAIL;
+        }
+
+        ESP_LOGD(TAG, "WRITING OccpWriteLocalList JSON: %s", jsonString);
+
+        esp_err_t err = storage->write_localist(jsonString);
+
+        free(jsonString);
 
         return err;
     }
 
     esp_err_t OCPPController::read_LocalAuthorizationList(void)
     {
-        size_t bufferSize = 2048;
-        char *data = (char *)malloc(bufferSize);
-        if (data == NULL)
-            return ESP_FAIL;
+        char *localAuthorizationListData = NULL;
+        esp_err_t status = storage->read_LocalAuthorizationList(&localAuthorizationListData);
 
-        memset(data, 0, bufferSize);
-
-        esp_err_t err = storage->read_LocalAuthorizationList(data, bufferSize);
-        if (err != ESP_OK)
+        if (status != ESP_OK)
         {
-            free(data);
-            return err;
+            std::memset(&LocalAuthorizationList, 0, sizeof(LocalAuthorizationList));
+            write_LocalAuthorizationList();
+
+            free(localAuthorizationListData);
+            localAuthorizationListData = NULL;
+
+            return ESP_OK;
         }
 
-        cJSON *json = cJSON_Parse(data);
-        free(data);
+        ESP_LOGD(TAG, "READ :: localAuthorizationList as JSON string: %s", localAuthorizationListData);
+
+        cJSON *json = cJSON_Parse(localAuthorizationListData);
+        free(localAuthorizationListData);
+        localAuthorizationListData = NULL;
 
         if (json == NULL)
+        {
+            ESP_LOGE(TAG, "Invalid local authorization list loaded from Flash");
             return ESP_FAIL;
-
-        auto &cfg = LocalAuthorizationList;
+        }
 
         cJSON *listArray = cJSON_GetObjectItem(json, "LocalAuthorizationList");
+        if (!cJSON_IsArray(listArray))
+        {
+            cJSON_Delete(json);
+            return ESP_FAIL;
+        }
 
-        for (int i = 0; i < LOCAL_LIST_COUNT; i++)
+        int arraySize = cJSON_GetArraySize(listArray);
+
+        auto &cfg = LocalAuthorizationList;
+        memset(&cfg, 0, sizeof(cfg));
+
+        for (int i = 0; i < arraySize && i < LOCAL_LIST_COUNT; i++)
         {
             cJSON *item = cJSON_GetArrayItem(listArray, i);
+            if (!cJSON_IsObject(item))
+                continue;
 
-            strcpy(cfg.idTag[i],
-                   cJSON_GetObjectItem(item, "idTag")->valuestring);
+            cJSON *idTag = cJSON_GetObjectItem(item, "idTag");
+            cJSON *idTagPresent = cJSON_GetObjectItem(item, "idTagPresent");
 
-            cfg.idTagPresent[i] =
-                cJSON_GetObjectItem(item, "idTagPresent")->valueint;
+            if (cJSON_IsString(idTag) && idTag->valuestring != NULL)
+            {
+                // Safe copy (IMPORTANT)
+                strncpy(cfg.idTag[i], idTag->valuestring, sizeof(cfg.idTag[i]) - 1);
+                cfg.idTag[i][sizeof(cfg.idTag[i]) - 1] = '\0';
+            }
+
+            if (cJSON_IsBool(idTagPresent))
+            {
+                cfg.idTagPresent[i] = cJSON_IsTrue(idTagPresent);
+            }
         }
 
         cJSON_Delete(json);
-        return ESP_OK;
+
+        ESP_LOGI(TAG, "---------------------------------");
+        ESP_LOGI(TAG, "Printing Local Authorization List");
+        ESP_LOGI(TAG, "---------------------------------");
+        // log localAuthentication list
+        for (uint32_t i = 0; i < LOCAL_LIST_COUNT; i++)
+        {
+            if (LocalAuthorizationList.idTagPresent[i])
+            {
+                ESP_LOGI(TAG, "Local Authentication Tag%ld : %s", i, LocalAuthorizationList.idTag[i]);
+            }
+        }
+        ESP_LOGI(TAG, "---------------------------------");
+        return status;
     }
 
     esp_err_t OCPPController::write_LocalAuthorizationList(void)
@@ -3522,30 +3598,42 @@ namespace OCPPModule
         auto &cfg = LocalAuthorizationList;
 
         cJSON *listArray = cJSON_CreateArray();
+        if (listArray == NULL)
+            return ESP_FAIL;
 
         for (int i = 0; i < LOCAL_LIST_COUNT; i++)
         {
             cJSON *item = cJSON_CreateObject();
+            if (item == NULL)
+                return ESP_FAIL;
 
             cJSON_AddStringToObject(item, "idTag", cfg.idTag[i]);
             cJSON_AddBoolToObject(item, "idTagPresent", cfg.idTagPresent[i]);
+
+            // **** TEST : DELETE LATER :: TODO
+            // char idTag[32];
+            // snprintf(idTag, sizeof(idTag), "user%d", i);
+            // cJSON_AddStringToObject(item, "idTag", idTag);
+            // cJSON_AddBoolToObject(item, "idTagPresent", bool(i));
 
             cJSON_AddItemToArray(listArray, item);
         }
 
         cJSON_AddItemToObject(json, "LocalAuthorizationList", listArray);
 
-        char *data = cJSON_PrintUnformatted(json);
-        if (data == NULL)
+        char *jsonString = cJSON_PrintUnformatted(json);
+        cJSON_Delete(json);
+
+        if (jsonString == NULL)
         {
-            cJSON_Delete(json);
             return ESP_FAIL;
         }
 
-        esp_err_t err = storage->write_LocalAuthorizationList(data);
+        ESP_LOGD(TAG, "WRITING LocalAuthorizationList JSON: %s", jsonString);
 
-        free(data);
-        cJSON_Delete(json);
+        esp_err_t err = storage->write_LocalAuthorizationList(jsonString);
+
+        free(jsonString);
 
         return err;
     }
@@ -3555,6 +3643,8 @@ namespace OCPPModule
         esp_err_t result = read_config_ocpp();
         switch (result)
         {
+        // case ESP_OK: // DO NOTHING : Already assigned the read ocpp config . TODO : recheck esp_ok case
+        case ESP_FAIL:
         case ESP_ERR_NOT_FOUND:
         case ESP_ERR_NVS_NOT_FOUND:
             memset(&CPGetConfigurationResponse, 0, sizeof(CPGetConfigurationResponse_t));
@@ -3646,70 +3736,74 @@ namespace OCPPModule
             CPGetConfigurationResponse.ConnectorSwitch3to1PhaseSupportedReadOnly = true;
             CPGetConfigurationResponse.MaxChargingProfilesInstalledReadOnly = true;
 
-            memcpy(CPGetConfigurationResponse.AuthorizeRemoteTxRequestsValue, "false", strlen("false"));
-            memcpy(CPGetConfigurationResponse.ClockAlignedDataIntervalValue, "600", strlen("600"));
-            memcpy(CPGetConfigurationResponse.ConnectionTimeOutValue, "120", strlen("120"));
-            memcpy(CPGetConfigurationResponse.GetConfigurationMaxKeysValue, "50", strlen("50"));
-            memcpy(CPGetConfigurationResponse.HeartbeatIntervalValue, "30", strlen("30"));
-            memcpy(CPGetConfigurationResponse.LocalAuthorizeOfflineValue, "true", strlen("true"));
-            memcpy(CPGetConfigurationResponse.LocalPreAuthorizeValue, "true", strlen("true"));
-            memcpy(CPGetConfigurationResponse.MeterValuesAlignedDataValue,
-                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature",
-                   strlen("Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature"));
-            memcpy(CPGetConfigurationResponse.MeterValuesSampledDataValue,
-                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature",
-                   strlen("Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature"));
-            memcpy(CPGetConfigurationResponse.MeterValueSampleIntervalValue, "30", strlen("30"));
+            strcpy(CPGetConfigurationResponse.AuthorizeRemoteTxRequestsValue, "false");
+            strcpy(CPGetConfigurationResponse.ClockAlignedDataIntervalValue, "600");
+            strcpy(CPGetConfigurationResponse.ConnectionTimeOutValue, "120");
+            strcpy(CPGetConfigurationResponse.GetConfigurationMaxKeysValue, "50");
+            strcpy(CPGetConfigurationResponse.HeartbeatIntervalValue, "30");
+            strcpy(CPGetConfigurationResponse.LocalAuthorizeOfflineValue, "true");
+            strcpy(CPGetConfigurationResponse.LocalPreAuthorizeValue, "true");
+
+            strcpy(CPGetConfigurationResponse.MeterValuesAlignedDataValue,
+                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature");
+
+            strcpy(CPGetConfigurationResponse.MeterValuesSampledDataValue,
+                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature");
+
+            strcpy(CPGetConfigurationResponse.MeterValueSampleIntervalValue, "30");
+
             if (config->NumberOfConnectors == 1)
             {
-                memcpy(CPGetConfigurationResponse.NumberOfConnectorsValue, "1", strlen("1"));
+                strcpy(CPGetConfigurationResponse.NumberOfConnectorsValue, "1");
             }
             else if (config->NumberOfConnectors == 2)
             {
-                memcpy(CPGetConfigurationResponse.NumberOfConnectorsValue, "2", strlen("2"));
+                strcpy(CPGetConfigurationResponse.NumberOfConnectorsValue, "2");
             }
             else
             {
-                memcpy(CPGetConfigurationResponse.NumberOfConnectorsValue, "3", strlen("3"));
+                strcpy(CPGetConfigurationResponse.NumberOfConnectorsValue, "3");
             }
-            memcpy(CPGetConfigurationResponse.ResetRetriesValue, "3", strlen("3"));
-            memcpy(CPGetConfigurationResponse.ConnectorPhaseRotationValue, "NotApplicable", strlen("NotApplicable"));
-            memcpy(CPGetConfigurationResponse.StopTransactionOnEVSideDisconnectValue, "true", strlen("true"));
-            memcpy(CPGetConfigurationResponse.StopTransactionOnInvalidIdValue, "true", strlen("true"));
-            memcpy(CPGetConfigurationResponse.StopTxnAlignedDataValue,
-                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature",
-                   strlen("Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature"));
-            memcpy(CPGetConfigurationResponse.StopTxnSampledDataValue,
-                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature",
-                   strlen("Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature"));
-            memcpy(CPGetConfigurationResponse.SupportedFeatureProfilesValue,
-                   "Core,LocalAuthListManagement,Reservation,RemoteTrigger,FirmwareManagement,SmartCharging",
-                   strlen("Core,LocalAuthListManagement,Reservation,RemoteTrigger,FirmwareManagement,SmartCharging"));
-            memcpy(CPGetConfigurationResponse.TransactionMessageAttemptsValue, "2", strlen("2"));
-            memcpy(CPGetConfigurationResponse.TransactionMessageRetryIntervalValue, "60", strlen("60"));
-            memcpy(CPGetConfigurationResponse.UnlockConnectorOnEVSideDisconnectValue, "true", strlen("true"));
-            memcpy(CPGetConfigurationResponse.AllowOfflineTxForUnknownIdValue, "false", strlen("false"));
-            memcpy(CPGetConfigurationResponse.AuthorizationCacheEnabledValue, "true", strlen("true"));
-            memcpy(CPGetConfigurationResponse.BlinkRepeatValue, "500", strlen("500"));
-            memcpy(CPGetConfigurationResponse.LightIntensityValue, "100", strlen("100"));
-            memcpy(CPGetConfigurationResponse.MaxEnergyOnInvalidIdValue, "0", strlen("0"));
-            memcpy(CPGetConfigurationResponse.MeterValuesAlignedDataMaxLengthValue, "5", strlen("5"));
-            memcpy(CPGetConfigurationResponse.MeterValuesSampledDataMaxLengthValue, "5", strlen("5"));
-            memcpy(CPGetConfigurationResponse.MinimumStatusDurationValue, "900", strlen("900"));
-            memcpy(CPGetConfigurationResponse.ConnectorPhaseRotationMaxLengthValue, "1", strlen("1"));
-            memcpy(CPGetConfigurationResponse.StopTxnAlignedDataMaxLengthValue, "5", strlen("5"));
-            memcpy(CPGetConfigurationResponse.StopTxnSampledDataMaxLengthValue, "5", strlen("5"));
-            memcpy(CPGetConfigurationResponse.SupportedFeatureProfilesMaxLengthValue, "6", strlen("6"));
-            memcpy(CPGetConfigurationResponse.WebSocketPingIntervalValue, "30", strlen("30"));
-            memcpy(CPGetConfigurationResponse.LocalAuthListEnabledValue, "true", strlen("true"));
-            memcpy(CPGetConfigurationResponse.LocalAuthListMaxLengthValue, "10", strlen("10"));
-            memcpy(CPGetConfigurationResponse.SendLocalListMaxLengthValue, "10", strlen("10"));
-            memcpy(CPGetConfigurationResponse.ReserveConnectorZeroSupportedValue, "false", strlen("false"));
-            memcpy(CPGetConfigurationResponse.ChargeProfileMaxStackLevelValue, "100", strlen("100"));
-            memcpy(CPGetConfigurationResponse.ChargingScheduleAllowedChargingRateUnitValue, "A", strlen("A"));
-            memcpy(CPGetConfigurationResponse.ChargingScheduleMaxPeriodsValue, "20", strlen("20"));
-            memcpy(CPGetConfigurationResponse.ConnectorSwitch3to1PhaseSupportedValue, "false", strlen("false"));
-            memcpy(CPGetConfigurationResponse.MaxChargingProfilesInstalledValue, "100", strlen("100"));
+
+            strcpy(CPGetConfigurationResponse.ResetRetriesValue, "3");
+            strcpy(CPGetConfigurationResponse.ConnectorPhaseRotationValue, "NotApplicable");
+            strcpy(CPGetConfigurationResponse.StopTransactionOnEVSideDisconnectValue, "true");
+            strcpy(CPGetConfigurationResponse.StopTransactionOnInvalidIdValue, "true");
+
+            strcpy(CPGetConfigurationResponse.StopTxnAlignedDataValue,
+                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature");
+
+            strcpy(CPGetConfigurationResponse.StopTxnSampledDataValue,
+                   "Energy.Active.Import.Register, Power.Active.Import, Voltage, Current.Import, Temperature");
+
+            strcpy(CPGetConfigurationResponse.SupportedFeatureProfilesValue,
+                   "Core,LocalAuthListManagement,Reservation,RemoteTrigger,FirmwareManagement,SmartCharging");
+
+            strcpy(CPGetConfigurationResponse.TransactionMessageAttemptsValue, "2");
+            strcpy(CPGetConfigurationResponse.TransactionMessageRetryIntervalValue, "60");
+            strcpy(CPGetConfigurationResponse.UnlockConnectorOnEVSideDisconnectValue, "true");
+            strcpy(CPGetConfigurationResponse.AllowOfflineTxForUnknownIdValue, "false");
+            strcpy(CPGetConfigurationResponse.AuthorizationCacheEnabledValue, "true");
+            strcpy(CPGetConfigurationResponse.BlinkRepeatValue, "500");
+            strcpy(CPGetConfigurationResponse.LightIntensityValue, "100");
+            strcpy(CPGetConfigurationResponse.MaxEnergyOnInvalidIdValue, "0");
+            strcpy(CPGetConfigurationResponse.MeterValuesAlignedDataMaxLengthValue, "5");
+            strcpy(CPGetConfigurationResponse.MeterValuesSampledDataMaxLengthValue, "5");
+            strcpy(CPGetConfigurationResponse.MinimumStatusDurationValue, "900");
+            strcpy(CPGetConfigurationResponse.ConnectorPhaseRotationMaxLengthValue, "1");
+            strcpy(CPGetConfigurationResponse.StopTxnAlignedDataMaxLengthValue, "5");
+            strcpy(CPGetConfigurationResponse.StopTxnSampledDataMaxLengthValue, "5");
+            strcpy(CPGetConfigurationResponse.SupportedFeatureProfilesMaxLengthValue, "6");
+            strcpy(CPGetConfigurationResponse.WebSocketPingIntervalValue, "30");
+            strcpy(CPGetConfigurationResponse.LocalAuthListEnabledValue, "true");
+            strcpy(CPGetConfigurationResponse.LocalAuthListMaxLengthValue, "10");
+            strcpy(CPGetConfigurationResponse.SendLocalListMaxLengthValue, "10");
+            strcpy(CPGetConfigurationResponse.ReserveConnectorZeroSupportedValue, "false");
+            strcpy(CPGetConfigurationResponse.ChargeProfileMaxStackLevelValue, "100");
+            strcpy(CPGetConfigurationResponse.ChargingScheduleAllowedChargingRateUnitValue, "A");
+            strcpy(CPGetConfigurationResponse.ChargingScheduleMaxPeriodsValue, "20");
+            strcpy(CPGetConfigurationResponse.ConnectorSwitch3to1PhaseSupportedValue, "false");
+            strcpy(CPGetConfigurationResponse.MaxChargingProfilesInstalledValue, "100");
 
             CPGetConfigurationResponse.AuthorizeRemoteTxRequests = false;
             CPGetConfigurationResponse.ClockAlignedDataInterval = 600;
@@ -3792,58 +3886,107 @@ namespace OCPPModule
 
             break;
         default:
-            ESP_LOGE(TAG, "Error (%s) opening NVS handle!\n", esp_err_to_name(result));
+            ESP_LOGE(TAG, "Error (%s) opening config ocpp!\n", esp_err_to_name(result));
             break;
         }
         ESP_LOGI(TAG, "----------------------------------------------------------------------");
         ESP_LOGI(TAG, "OCPP Configuration Parameters");
         ESP_LOGI(TAG, "----------------------------------------------------------------------");
 
-        ESP_LOGI(TAG, "AuthorizeRemoteTxRequestsValue : %s", CPGetConfigurationResponse.AuthorizeRemoteTxRequestsValue);
-        ESP_LOGI(TAG, "ClockAlignedDataIntervalValue : %s", CPGetConfigurationResponse.ClockAlignedDataIntervalValue);
-        ESP_LOGI(TAG, "ConnectionTimeOutValue : %s", CPGetConfigurationResponse.ConnectionTimeOutValue);
-        ESP_LOGI(TAG, "GetConfigurationMaxKeysValue : %s", CPGetConfigurationResponse.GetConfigurationMaxKeysValue);
-        ESP_LOGI(TAG, "HeartbeatIntervalValue : %s", CPGetConfigurationResponse.HeartbeatIntervalValue);
-        ESP_LOGI(TAG, "LocalAuthorizeOfflineValue : %s", CPGetConfigurationResponse.LocalAuthorizeOfflineValue);
-        ESP_LOGI(TAG, "LocalPreAuthorizeValue : %s", CPGetConfigurationResponse.LocalPreAuthorizeValue);
-        ESP_LOGI(TAG, "MeterValuesAlignedDataValue : %s", CPGetConfigurationResponse.MeterValuesAlignedDataValue);
-        ESP_LOGI(TAG, "MeterValuesSampledDataValue : %s", CPGetConfigurationResponse.MeterValuesSampledDataValue);
-        ESP_LOGI(TAG, "MeterValueSampleIntervalValue : %s", CPGetConfigurationResponse.MeterValueSampleIntervalValue);
-        ESP_LOGI(TAG, "NumberOfConnectorsValue : %s", CPGetConfigurationResponse.NumberOfConnectorsValue);
-        ESP_LOGI(TAG, "ResetRetriesValue : %s", CPGetConfigurationResponse.ResetRetriesValue);
-        ESP_LOGI(TAG, "ConnectorPhaseRotationValue : %s", CPGetConfigurationResponse.ConnectorPhaseRotationValue);
+        ESP_LOGI(TAG, "AuthorizeRemoteTxRequestsValue         : %s", CPGetConfigurationResponse.AuthorizeRemoteTxRequestsValue);
+        ESP_LOGI(TAG, "ClockAlignedDataIntervalValue          : %s", CPGetConfigurationResponse.ClockAlignedDataIntervalValue);
+        ESP_LOGI(TAG, "ConnectionTimeOutValue                 : %s", CPGetConfigurationResponse.ConnectionTimeOutValue);
+        ESP_LOGI(TAG, "GetConfigurationMaxKeysValue           : %s", CPGetConfigurationResponse.GetConfigurationMaxKeysValue);
+        ESP_LOGI(TAG, "HeartbeatIntervalValue                 : %s", CPGetConfigurationResponse.HeartbeatIntervalValue);
+        ESP_LOGI(TAG, "LocalAuthorizeOfflineValue             : %s", CPGetConfigurationResponse.LocalAuthorizeOfflineValue);
+        ESP_LOGI(TAG, "LocalPreAuthorizeValue                 : %s", CPGetConfigurationResponse.LocalPreAuthorizeValue);
+        ESP_LOGI(TAG, "MeterValuesAlignedDataValue            : %s", CPGetConfigurationResponse.MeterValuesAlignedDataValue);
+        ESP_LOGI(TAG, "MeterValuesSampledDataValue            : %s", CPGetConfigurationResponse.MeterValuesSampledDataValue);
+        ESP_LOGI(TAG, "MeterValueSampleIntervalValue          : %s", CPGetConfigurationResponse.MeterValueSampleIntervalValue);
+        ESP_LOGI(TAG, "NumberOfConnectorsValue                : %s", CPGetConfigurationResponse.NumberOfConnectorsValue);
+        ESP_LOGI(TAG, "ResetRetriesValue                      : %s", CPGetConfigurationResponse.ResetRetriesValue);
+        ESP_LOGI(TAG, "ConnectorPhaseRotationValue            : %s", CPGetConfigurationResponse.ConnectorPhaseRotationValue);
         ESP_LOGI(TAG, "StopTransactionOnEVSideDisconnectValue : %s", CPGetConfigurationResponse.StopTransactionOnEVSideDisconnectValue);
-        ESP_LOGI(TAG, "StopTransactionOnInvalidIdValue : %s", CPGetConfigurationResponse.StopTransactionOnInvalidIdValue);
-        ESP_LOGI(TAG, "StopTxnAlignedDataValue : %s", CPGetConfigurationResponse.StopTxnAlignedDataValue);
-        ESP_LOGI(TAG, "StopTxnSampledDataValue : %s", CPGetConfigurationResponse.StopTxnSampledDataValue);
-        ESP_LOGI(TAG, "SupportedFeatureProfilesValue : %s", CPGetConfigurationResponse.SupportedFeatureProfilesValue);
-        ESP_LOGI(TAG, "TransactionMessageAttemptsValue : %s", CPGetConfigurationResponse.TransactionMessageAttemptsValue);
-        ESP_LOGI(TAG, "TransactionMessageRetryIntervalValue : %s", CPGetConfigurationResponse.TransactionMessageRetryIntervalValue);
+        ESP_LOGI(TAG, "StopTransactionOnInvalidIdValue        : %s", CPGetConfigurationResponse.StopTransactionOnInvalidIdValue);
+        ESP_LOGI(TAG, "StopTxnAlignedDataValue                : %s", CPGetConfigurationResponse.StopTxnAlignedDataValue);
+        ESP_LOGI(TAG, "StopTxnSampledDataValue                : %s", CPGetConfigurationResponse.StopTxnSampledDataValue);
+        ESP_LOGI(TAG, "SupportedFeatureProfilesValue          : %s", CPGetConfigurationResponse.SupportedFeatureProfilesValue);
+        ESP_LOGI(TAG, "TransactionMessageAttemptsValue        : %s", CPGetConfigurationResponse.TransactionMessageAttemptsValue);
+        ESP_LOGI(TAG, "TransactionMessageRetryIntervalValue   : %s", CPGetConfigurationResponse.TransactionMessageRetryIntervalValue);
         ESP_LOGI(TAG, "UnlockConnectorOnEVSideDisconnectValue : %s", CPGetConfigurationResponse.UnlockConnectorOnEVSideDisconnectValue);
-        ESP_LOGI(TAG, "AllowOfflineTxForUnknownIdValue : %s", CPGetConfigurationResponse.AllowOfflineTxForUnknownIdValue);
-        ESP_LOGI(TAG, "AuthorizationCacheEnabledValue : %s", CPGetConfigurationResponse.AuthorizationCacheEnabledValue);
-        ESP_LOGI(TAG, "BlinkRepeatValue : %s", CPGetConfigurationResponse.BlinkRepeatValue);
-        ESP_LOGI(TAG, "LightIntensityValue : %s", CPGetConfigurationResponse.LightIntensityValue);
-        ESP_LOGI(TAG, "MaxEnergyOnInvalidIdValue : %s", CPGetConfigurationResponse.MaxEnergyOnInvalidIdValue);
-        ESP_LOGI(TAG, "MeterValuesAlignedDataMaxLengthValue : %s", CPGetConfigurationResponse.MeterValuesAlignedDataMaxLengthValue);
-        ESP_LOGI(TAG, "MeterValuesSampledDataMaxLengthValue : %s", CPGetConfigurationResponse.MeterValuesSampledDataMaxLengthValue);
-        ESP_LOGI(TAG, "MinimumStatusDurationValue : %s", CPGetConfigurationResponse.MinimumStatusDurationValue);
-        ESP_LOGI(TAG, "ConnectorPhaseRotationMaxLengthValue : %s", CPGetConfigurationResponse.ConnectorPhaseRotationMaxLengthValue);
-        ESP_LOGI(TAG, "StopTxnAlignedDataMaxLengthValue : %s", CPGetConfigurationResponse.StopTxnAlignedDataMaxLengthValue);
-        ESP_LOGI(TAG, "StopTxnSampledDataMaxLengthValue : %s", CPGetConfigurationResponse.StopTxnSampledDataMaxLengthValue);
+        ESP_LOGI(TAG, "AllowOfflineTxForUnknownIdValue        : %s", CPGetConfigurationResponse.AllowOfflineTxForUnknownIdValue);
+        ESP_LOGI(TAG, "AuthorizationCacheEnabledValue         : %s", CPGetConfigurationResponse.AuthorizationCacheEnabledValue);
+        ESP_LOGI(TAG, "BlinkRepeatValue                       : %s", CPGetConfigurationResponse.BlinkRepeatValue);
+        ESP_LOGI(TAG, "LightIntensityValue                    : %s", CPGetConfigurationResponse.LightIntensityValue);
+        ESP_LOGI(TAG, "MaxEnergyOnInvalidIdValue              : %s", CPGetConfigurationResponse.MaxEnergyOnInvalidIdValue);
+        ESP_LOGI(TAG, "MeterValuesAlignedDataMaxLengthValue   : %s", CPGetConfigurationResponse.MeterValuesAlignedDataMaxLengthValue);
+        ESP_LOGI(TAG, "MeterValuesSampledDataMaxLengthValue   : %s", CPGetConfigurationResponse.MeterValuesSampledDataMaxLengthValue);
+        ESP_LOGI(TAG, "MinimumStatusDurationValue             : %s", CPGetConfigurationResponse.MinimumStatusDurationValue);
+        ESP_LOGI(TAG, "ConnectorPhaseRotationMaxLengthValue   : %s", CPGetConfigurationResponse.ConnectorPhaseRotationMaxLengthValue);
+        ESP_LOGI(TAG, "StopTxnAlignedDataMaxLengthValue       : %s", CPGetConfigurationResponse.StopTxnAlignedDataMaxLengthValue);
+        ESP_LOGI(TAG, "StopTxnSampledDataMaxLengthValue       : %s", CPGetConfigurationResponse.StopTxnSampledDataMaxLengthValue);
         ESP_LOGI(TAG, "SupportedFeatureProfilesMaxLengthValue : %s", CPGetConfigurationResponse.SupportedFeatureProfilesMaxLengthValue);
-        ESP_LOGI(TAG, "WebSocketPingIntervalValue : %s", CPGetConfigurationResponse.WebSocketPingIntervalValue);
-        ESP_LOGI(TAG, "LocalAuthListEnabledValue : %s", CPGetConfigurationResponse.LocalAuthListEnabledValue);
-        ESP_LOGI(TAG, "LocalAuthListMaxLengthValue : %s", CPGetConfigurationResponse.LocalAuthListMaxLengthValue);
-        ESP_LOGI(TAG, "SendLocalListMaxLengthValue : %s", CPGetConfigurationResponse.SendLocalListMaxLengthValue);
-        ESP_LOGI(TAG, "ReserveConnectorZeroSupportedValue : %s", CPGetConfigurationResponse.ReserveConnectorZeroSupportedValue);
-        ESP_LOGI(TAG, "ChargeProfileMaxStackLevelValue : %s", CPGetConfigurationResponse.ChargeProfileMaxStackLevelValue);
+        ESP_LOGI(TAG, "WebSocketPingIntervalValue             : %s", CPGetConfigurationResponse.WebSocketPingIntervalValue);
+        ESP_LOGI(TAG, "LocalAuthListEnabledValue              : %s", CPGetConfigurationResponse.LocalAuthListEnabledValue);
+        ESP_LOGI(TAG, "LocalAuthListMaxLengthValue            : %s", CPGetConfigurationResponse.LocalAuthListMaxLengthValue);
+        ESP_LOGI(TAG, "SendLocalListMaxLengthValue            : %s", CPGetConfigurationResponse.SendLocalListMaxLengthValue);
+        ESP_LOGI(TAG, "ReserveConnectorZeroSupportedValue     : %s", CPGetConfigurationResponse.ReserveConnectorZeroSupportedValue);
+        ESP_LOGI(TAG, "ChargeProfileMaxStackLevelValue        : %s", CPGetConfigurationResponse.ChargeProfileMaxStackLevelValue);
         ESP_LOGI(TAG, "ChargingScheduleAllowedChargingRateUnitValue : %s", CPGetConfigurationResponse.ChargingScheduleAllowedChargingRateUnitValue);
-        ESP_LOGI(TAG, "ChargingScheduleMaxPeriodsValue : %s", CPGetConfigurationResponse.ChargingScheduleMaxPeriodsValue);
+        ESP_LOGI(TAG, "ChargingScheduleMaxPeriodsValue        : %s", CPGetConfigurationResponse.ChargingScheduleMaxPeriodsValue);
         ESP_LOGI(TAG, "ConnectorSwitch3to1PhaseSupportedValue : %s", CPGetConfigurationResponse.ConnectorSwitch3to1PhaseSupportedValue);
-        ESP_LOGI(TAG, "MaxChargingProfilesInstalledValue : %s", CPGetConfigurationResponse.MaxChargingProfilesInstalledValue);
+        ESP_LOGI(TAG, "MaxChargingProfilesInstalledValue      : %s", CPGetConfigurationResponse.MaxChargingProfilesInstalledValue);
         ESP_LOGI(TAG, "----------------------------------------------------------------------\r\n");
         return ESP_OK;
+    }
+
+    void OCPPController::printLocalList(void)
+    {
+        ESP_LOGI(TAG, "---------------------------------");
+        ESP_LOGI(TAG, "Printing Local List");
+        ESP_LOGI(TAG, "---------------------------------");
+
+        // log local list
+
+        for (uint32_t i = 0; i < LOCAL_LIST_COUNT; i++)
+        {
+            if (CMSSendLocalListRequest.localAuthorizationList[i].idTagPresent)
+            {
+                ESP_LOGI(TAG, "CMS Local List Tag%ld : %s", i, CMSSendLocalListRequest.localAuthorizationList[i].idTag);
+            }
+        }
+        ESP_LOGI(TAG, "---------------------------------");
+    }
+
+    const char *OCPPController::GetStopReasonString(OCPPModule::StopReasons reason)
+    {
+        switch (reason)
+        {
+        case OCPPModule::StopReasons::Stop_EmergencyStop:
+            return "EmergencyStop";
+        case OCPPModule::StopReasons::Stop_EVDisconnected:
+            return "EVDisconnected";
+        case OCPPModule::StopReasons::Stop_HardReset:
+            return "HardReset";
+        case OCPPModule::StopReasons::Stop_Local:
+            return "LocalStop";
+        case OCPPModule::StopReasons::Stop_Other:
+            return "Other";
+        case OCPPModule::StopReasons::Stop_PowerLoss:
+            return "PowerLoss";
+        case OCPPModule::StopReasons::Stop_Reboot:
+            return "Reboot";
+        case OCPPModule::StopReasons::Stop_Remote:
+            return "RemoteStop";
+        case OCPPModule::StopReasons::Stop_SoftReset:
+            return "SoftReset";
+        case OCPPModule::StopReasons::Stop_UnlockCommand:
+            return "UnlockCommand";
+        case OCPPModule::StopReasons::Stop_DeAuthorized:
+            return "DeAuthorized";
+        default:
+            return "UNKNOWN";
+        }
     }
 
 } // namespace OCPPModule

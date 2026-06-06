@@ -46,7 +46,7 @@ namespace NVSModule
         {
             esp_vfs_spiffs_conf_t conf = {
                 .base_path = "/MyStorage",
-                .partition_label = "MyStorage",
+                .partition_label = "spiffs",
                 .max_files = 20,
                 .format_if_mount_failed = true,
             };
@@ -67,12 +67,24 @@ namespace NVSModule
             if (ret != ESP_OK)
             {
                 ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s). Formatting...", esp_err_to_name(ret));
+
                 esp_spiffs_format(conf.partition_label);
-                return;
+
+                esp_vfs_spiffs_unregister(conf.partition_label);
+
+                ret = esp_vfs_spiffs_register(&conf);
+
+                if (ret != ESP_OK)
+                {
+                    ESP_LOGE(TAG, "SPIFFS remount failed after format");
+                    return;
+                }
+
+                ESP_LOGI(TAG, "SPIFFS formatted and mounted successfully");
             }
             else
             {
-                ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
+                ESP_LOGD(TAG, "Partition size: total: %d, used: %d", total, used);
             }
         }
     }
@@ -83,7 +95,7 @@ namespace NVSModule
         // Cleanup, if necessary
     }
 
-    esp_err_t NVSStorage::readFile(char *filename, char *data)
+    esp_err_t NVSStorage::readFile(const char *filename, char *data)
     {
         FILE *file = fopen(filename, "r");
         if (file == NULL)
@@ -102,7 +114,7 @@ namespace NVSModule
         return ESP_OK;
     }
 
-    esp_err_t NVSStorage::readFile_(char *filename, char **outData)
+    esp_err_t NVSStorage::readFile_(const char *filename, char **outData)
     {
         FILE *file = fopen(filename, "r");
         if (file == NULL)
@@ -133,7 +145,7 @@ namespace NVSModule
         return ESP_OK;
     }
 
-    esp_err_t NVSStorage::writeFile(char *filename, char *data)
+    esp_err_t NVSStorage::writeFile(const char *filename, const char *data)
     {
         FILE *file = fopen(filename, "w");
         if (file == NULL)
@@ -150,35 +162,14 @@ namespace NVSModule
         return ESP_OK;
     }
 
-    esp_err_t NVSStorage::ReadTimeJson(char *data, uint16_t dataBufferLen)
+    esp_err_t NVSStorage::ReadTimeJson(char **data)
     {
-        FILE *file = fopen("/MyStorage/time.txt", "r");
-        if (file == NULL)
-            return ESP_FAIL;
-
-        size_t bytesRead = fread(data, 1, dataBufferLen, file);
-        fclose(file);
-
-        if (bytesRead == 0)
-            return ESP_FAIL;
-
-        return ESP_OK;
+        return readFile_("/MyStorage/time.txt", data);
     }
 
     esp_err_t NVSStorage::WriteTimeJson(char *data)
     {
-        FILE *file = fopen("/MyStorage/time.txt", "w");
-        if (file == NULL)
-            return ESP_FAIL;
-
-        size_t len = strlen(data);
-        size_t written = fwrite(data, 1, len, file);
-        fclose(file);
-
-        if (written != len)
-            return ESP_FAIL;
-
-        return ESP_OK;
+        return writeFile("/MyStorage/time.txt", data);
     }
 
     esp_err_t NVSStorage::ReadConfigData(char **data)
@@ -193,20 +184,20 @@ namespace NVSModule
 
     esp_err_t NVSStorage::ReadConnectorModuleStatus(uint8_t ConnId, char **data)
     {
-        char fileName[30];
-        memset(fileName, '\0', sizeof(fileName));
-        snprintf(fileName, sizeof(fileName), "/MyStorage/connector_%hhu.txt", ConnId);
+        char filename[50];
+        memset(filename, '\0', sizeof(filename));
+        snprintf(filename, sizeof(filename), "/MyStorage/connector_%hhu.txt", ConnId);
 
-        return readFile_(fileName, data);
+        return readFile_(filename, data);
     }
 
     esp_err_t NVSStorage::WriteConnectorModuleStatus(uint8_t ConnId, char *data)
     {
-        char fileName[30];
-        memset(fileName, '\0', sizeof(fileName));
-        snprintf(fileName, sizeof(fileName), "/MyStorage/connector_%hhu.txt", ConnId);
+        char filename[50];
+        memset(filename, '\0', sizeof(filename));
+        snprintf(filename, sizeof(filename), "/MyStorage/connector_%hhu.txt", ConnId);
 
-        return writeFile(fileName, data);
+        return writeFile(filename, data);
     }
 
     esp_err_t NVSStorage::read_connectors_offline_data_count(uint8_t ConnId, uint32_t *offlineCount)
@@ -271,91 +262,75 @@ namespace NVSModule
         return ESP_OK;
     }
 
-    esp_err_t NVSStorage::read_connectors_offline_data(uint8_t ConnId, char *data, size_t size)
+    esp_err_t NVSStorage::read_connectors_offline_data(uint8_t ConnId, char *data)
     {
-        char fileName[50];
-        memset(fileName, '\0', sizeof(fileName));
-        snprintf(fileName, sizeof(fileName), "/MyStorage/connector_%hhu.txt", ConnId);
+        char filename[50];
+        memset(filename, '\0', sizeof(filename));
+        snprintf(filename, sizeof(filename), "/MyStorage/ConOffData%d.txt", ConnId);
 
-        FILE *file = fopen(fileName, "r");
-        if (file == NULL)
-        {
-            ESP_LOGD(TAG, "Failed to open connector status file for reading");
-            return ESP_FAIL;
-        }
-
-        size_t bytesRead = fread(data, 1, size, file);
-        fclose(file);
-
-        if (bytesRead == 0)
-        {
-            ESP_LOGD(TAG, "Failed to read connector status data from file");
-            return ESP_FAIL;
-        }
-        // TODO: check data is valid Json string
-        return ESP_OK;
+        return readFile(filename, data);
     }
 
-    esp_err_t NVSStorage::write_connectors_offline_data(uint8_t ConnId, char data)
+    esp_err_t NVSStorage::write_connectors_offline_data(uint8_t ConnId, char *data)
     {
-        char fileName[50];
-        memset(fileName, '\0', sizeof(fileName));
-        snprintf(fileName, sizeof(fileName), "/MyStorage/connector_%hhu.txt", ConnId);
+        char filename[50];
+        memset(filename, '\0', sizeof(filename));
+        snprintf(filename, sizeof(filename), "/MyStorage/ConOffData%d.txt", ConnId);
 
-        FILE file = fopen(fileName, "r");
+        FILE *file = fopen(filename, "r");
 
-        char buffer = NULL;
+        char *writeBuffer = NULL;
         size_t oldSize = 0;
         size_t newSize = 0;
+        size_t dataLen = strlen(data);
 
-        if (file != NULL)
+        if (file == NULL)
+        {
+            // File does not exist → calculate the newSize: [ + data + ] + \0
+            newSize = dataLen + 2 + 1;
+
+            writeBuffer = (char *)malloc(newSize);
+            if (writeBuffer == NULL)
+            {
+                return ESP_ERR_NO_MEM;
+            }
+
+            writeBuffer[0] = '[';
+
+            memcpy(writeBuffer + 1, data, dataLen);
+
+            writeBuffer[1 + dataLen] = ']';
+            writeBuffer[newSize - 1] = '\0';
+        }
+        else
         {
             fseek(file, 0, SEEK_END);
             oldSize = ftell(file);
             fseek(file, 0, SEEK_SET);
 
-            newSize = oldSize + strlen(data) + 2; // adding ',' and '\0'
+            // TODO: consider malformed file. check(oldSize > 2)
 
-            buffer = (char)malloc(newSize);
-            if (buffer == NULL)
+            newSize = oldSize + dataLen + 2; // adding ',' and '\0'
+
+            writeBuffer = (char *)malloc(newSize);
+            if (writeBuffer == NULL)
             {
                 fclose(file);
                 return ESP_ERR_NO_MEM;
             }
 
-            fread(buffer, 1, oldSize, file);
+            fread(writeBuffer, 1, oldSize, file);
             fclose(file);
 
-            Append new data
-                buffer[oldSize - 1] = ',';
-            memcpy(buffer + oldSize, data, strlen(data));
-            buffer[newSize - 2] = ']';
-            buffer[newSize - 1] = '\0';
-        }
-        else
-        {
-
-            size_t dataLen = strlen(data);
-
-            size_t newSize = dataLen + 2;
-
-            buffer = (char *)malloc(newSize);
-            if (buffer == NULL)
-            {
-                return ESP_ERR_NO_MEM;
-
-                buffer[newSize - 2] = ']';
-                buffer[newSize - 1] = '\0';
-            }
-
-            buffer[0] = '[';
-
-            memcpy(buffer + 1, data, dataLen);
-
-            buffer[1 + dataLen] = ']';
+            writeBuffer[oldSize - 1] = ',';
+            memcpy(writeBuffer + oldSize, data, strlen(data));
+            writeBuffer[newSize - 2] = ']';
+            writeBuffer[newSize - 1] = '\0';
         }
 
-        return writeFile(filename, buffer);
+        esp_err_t err = writeFile(filename, writeBuffer); // check if needed atomic
+        free(writeBuffer);
+        return err;
     }
 
     esp_err_t NVSStorage::read_logFileNo(uint32_t *fileNumber)
@@ -413,9 +388,9 @@ namespace NVSModule
         return ESP_OK;
     }
 
-    esp_err_t NVSStorage::read_config_ocpp(char *data)
+    esp_err_t NVSStorage::read_config_ocpp(char **data)
     {
-        return readFile("/MyStorage/ocppconfig.txt", data);
+        return readFile_("/MyStorage/ocppconfig.txt", data);
     }
 
     esp_err_t NVSStorage::write_config_ocpp(char *data)
@@ -423,9 +398,9 @@ namespace NVSModule
         return writeFile("/MyStorage/ocppconfig.txt", data);
     }
 
-    esp_err_t NVSStorage::read_localist(char *data)
+    esp_err_t NVSStorage::read_localist(char **data)
     {
-        return readFile("/MyStorage/locallist.txt", data);
+        return readFile_("/MyStorage/locallist.txt", data);
     }
 
     esp_err_t NVSStorage::write_localist(char *data)
@@ -433,9 +408,9 @@ namespace NVSModule
         return writeFile("/MyStorage/locallist.txt", data);
     }
 
-    esp_err_t NVSStorage::read_LocalAuthorizationList(char *data)
+    esp_err_t NVSStorage::read_LocalAuthorizationList(char **data)
     {
-        return readFile("/MyStorage/localAuthlist.txt", data);
+        return readFile_("/MyStorage/localAuthlist.txt", data);
     }
 
     esp_err_t NVSStorage::write_LocalAuthorizationList(char *data)

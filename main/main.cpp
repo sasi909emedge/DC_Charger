@@ -99,12 +99,20 @@ bool SendEnergyModuleData(uint8_t *data, uint16_t length)
     return serial->SendData(SerialModule::PacketId::ENERGY, data, length);
 }
 
-bool SendGpioData(uint16_t gpio, uint16_t state)
+bool SendGpioData(uint8_t id, uint16_t gpio, uint8_t state)
 {
     uint8_t dataBuffer[4];
-    std::memcpy(dataBuffer, &gpio, sizeof(gpio));
-    std::memcpy(&dataBuffer[2], &state, sizeof(state));
-    return serial->SendData(SerialModule::PacketId::RELAY, dataBuffer, sizeof(dataBuffer));
+
+    dataBuffer[0] = id;
+
+    std::memcpy(&dataBuffer[1], &gpio, sizeof(gpio));
+
+    dataBuffer[3] = state;
+
+    return serial->SendData(
+        SerialModule::PacketId::RELAY,
+        dataBuffer,
+        sizeof(dataBuffer));
 }
 
 void TimerTask(void)
@@ -136,7 +144,7 @@ extern "C" void app_main(void)
     network->WebSocketPingInterval = ocpp->CPGetConfigurationResponse.WebSocketPingInterval;
 
     char *configData = NULL;
-    if (storage->ReadConfigData_(&configData) == ESP_OK)
+    if (storage->ReadConfigData(&configData) == ESP_OK)
     {
         ESP_LOGI(TAG, "Config JSON string: %s", configData);
         cJSON *json = cJSON_Parse(configData);

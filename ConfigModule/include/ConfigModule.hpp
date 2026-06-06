@@ -10,7 +10,7 @@
 #define INC_CONFIG_MODULE_H_
 
 #include <cstdint>
-#include <cstdbool>
+// #include <cstdbool>
 #include <vector>
 #include <array>
 #include <string>
@@ -80,7 +80,7 @@ namespace ConfigModule
 
     struct PowerModuleConfig
     {
-        bool isActive;
+        bool isAvailable;
         uint8_t moduleAddress;
         float MaxVoltage;
         float MaxCurrent;
@@ -196,6 +196,15 @@ namespace ConfigModule
 
         esp_err_t WriteConfigurationToFlash(void);
         esp_err_t ReadConfigurationFromFlash(void);
+
+    private:
+        void printConfigParameters();
+        const char *GetChargerTypeString(ChargerType chargerType);
+        const char *GetChargerModelString(ChargerModel chargerModel);
+        const char *GetBoardModelString(BoardModel boardModel);
+        const char *GetEthernetConfigTypeString(EthernetConfigType ethernetConfigType);
+        const char *GetNetworkModeString(NetworkMode networkMode);
+        const char *GetChargingModeString(ChargingMode chargingMode);
     };
 
 } // namespace ConfigModule

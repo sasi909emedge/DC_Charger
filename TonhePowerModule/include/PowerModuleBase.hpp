@@ -9,11 +9,12 @@
 #define INC_POWERMODULEBASE_H_
 
 #include <cstdint>
-#include <cstdbool>
+// #include <cstdbool>
 #include <vector>
 #include <array>
 
 #include "ConfigModule.hpp"
+#include "GpioModule.hpp"
 
 // C++ specific section begins here
 namespace PowerModule
@@ -65,8 +66,9 @@ namespace PowerModule
 
     struct ModuleStatus
     {
-        bool isActive;
+        bool isAvailable;
         bool isAlive;
+        uint32_t AliveCounter;
         ConnectorType Connector;
         ChargingModuleState state;
         uint32_t moduleAddress;
@@ -88,10 +90,19 @@ namespace PowerModule
         float outputCurrent;
         bool isFaultTriggered;
         bool isProfilingOngoing;
+        bool isDefaultPm;
+        uint32_t twinPmId;
+        ConnectorType defaultConnector;
+
+        GpioModule::ChargerGpio_t *AcPm;
+        GpioModule::ChargerGpio_t *AcPmFb;
+        GpioModule::ChargerGpio_t *leftMerger;
+        GpioModule::ChargerGpio_t *rightMerger;
+
         ProfilingType ProfileType;
         std::array<bool, 24> faultBits;
 
-        ModuleStatus() : isActive(false),
+        ModuleStatus() : isAvailable(false),
                          Connector(ConnectorType::DEFAULT),
                          state(ChargingModuleState::NORMAL_OFF),
                          PhaseAVoltage(0.0f),
@@ -104,6 +115,11 @@ namespace PowerModule
                          outputCurrent(0.0f),
                          isFaultTriggered(false),
                          isProfilingOngoing(false),
+                         isDefaultPm(false),
+                         AcPm(NULL),
+                         AcPmFb(NULL),
+                         leftMerger(NULL),
+                         rightMerger(NULL),
                          ProfileType(ProfilingType::INCREASE)
         {
             faultBits.fill(false);

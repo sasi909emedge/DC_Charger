@@ -1,11 +1,11 @@
 import subprocess
 import sys
-
+import shlex
 
 def run_git_command(command):
 
     result = subprocess.run(
-        ["git"] + command.split(),
+        ["git"] + shlex.split(command),
         capture_output=True,
         text=True
     )
@@ -33,6 +33,46 @@ def check_clean():
         sys.exit(1)
 
     print("Working tree clean")
+
+def auto_commit_feature(
+        feature_branch,
+        message="auto firmware update"):
+
+    print("Checking for new changes...")
+
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True,
+        text=True
+    )
+
+
+    if not result.stdout:
+        print("No changes to commit")
+        return
+
+
+    print("Adding changes...")
+
+    run_git_command(
+        "add ."
+    )
+
+
+    print("Creating commit...")
+
+    run_git_command(
+        f'commit -m "{message}"'
+    )
+
+
+    print(
+        f"Pushing {feature_branch}"
+    )
+
+    run_git_command(
+        f"push origin {feature_branch}"
+    )    
 
 
 def git_checkout(branch):
@@ -99,6 +139,12 @@ def git_push(branch):
 def merge_feature_to_master(
         feature_branch,
         master_branch):
+
+
+    auto_commit_feature(
+        feature_branch
+    )
+
 
     check_clean()
 

@@ -20,38 +20,21 @@ namespace SerialModule
     struct UART_Data
     {
         bool messageStart;
-        bool errorStatus;
-        bool writeStatus;
-        bool errorMessage;
-        bool messageCompletedStatus;
         bool messageLengthFirstByteStatus;
         bool messageLengthSecondByteStatus;
-
-        uint8_t CommunicationFlag;
-        uint16_t messageLengthFirstByte;
-        uint16_t messageLengthSecondByte;
         uint16_t messageLength;
         uint16_t messageReceiveCounter;
         uint16_t messagechecksumValue;
         uint16_t checksumValue;
-        uint16_t messageTimeOutCount;
 
         UART_Data()
             : messageStart(false),
-              errorStatus(false),
-              writeStatus(false),
-              errorMessage(false),
-              messageCompletedStatus(false),
               messageLengthFirstByteStatus(false),
               messageLengthSecondByteStatus(false),
-              CommunicationFlag(0),
-              messageLengthFirstByte(0),
-              messageLengthSecondByte(0),
               messageLength(0),
               messageReceiveCounter(0),
               messagechecksumValue(0),
-              checksumValue(0),
-              messageTimeOutCount(0)
+              checksumValue(0)
         {
         }
     };
@@ -60,7 +43,7 @@ namespace SerialModule
 
     void SerialController::serialTask(void *pvParameters)
     {
-        vTaskDelay(pdMS_TO_TICKS(100)); // Delay to ensure other modules are initialized
+        vTaskDelay(pdMS_TO_TICKS(3000)); // Delay to ensure other modules are initialized
         uint8_t slave_data[SLAVE_BUFF_SIZE];
         uint8_t receivedByte = 0;
         memset(&serial_uart, 0, sizeof(serial_uart));
@@ -79,7 +62,7 @@ namespace SerialModule
                     {
                         serial_uart.messageStart = true;
                         slave_data[1] = 0xAA;
-                        serial_uart.messagechecksumValue = 255; /*Integer value of 0xAA55 is 43605*/
+                        serial_uart.messagechecksumValue = 0x55 + 0xAA; /*Integer value of 0xAA55 is 43605*/
                     }
                     else
                     {
@@ -90,80 +73,93 @@ namespace SerialModule
                 else if (serial_uart.messageLengthFirstByteStatus == false)
                 {
                     slave_data[2] = receivedByte;
-                    serial_uart.messageLengthFirstByte = receivedByte;
+                    serial_uart.messageLength = receivedByte;
                     serial_uart.messageLengthFirstByteStatus = true;
                     serial_uart.messagechecksumValue += receivedByte;
                 }
                 else if (serial_uart.messageLengthSecondByteStatus == false)
                 {
                     slave_data[3] = receivedByte;
-                    serial_uart.messageLengthSecondByte = receivedByte;
-                    serial_uart.messageLength = (serial_uart.messageLengthSecondByte * 256 + serial_uart.messageLengthFirstByte);
+                    serial_uart.messageLength |= ((uint16_t)receivedByte << 8);
+
+                    if (serial_uart.messageLength > (SLAVE_BUFF_SIZE - 4))
+                    {
+                        ESP_LOGE(TAG, "Invalid length %d", serial_uart.messageLength);
+
+                        memset(&serial_uart, 0, sizeof(serial_uart));
+                        continue;
+                    }
                     serial_uart.messageReceiveCounter = 0;
                     serial_uart.messageLengthSecondByteStatus = true;
                     serial_uart.messagechecksumValue += receivedByte;
                 }
                 else
                 {
+
                     if (serial_uart.messageReceiveCounter < (serial_uart.messageLength))
                     {
                         slave_data[4 + serial_uart.messageReceiveCounter] = receivedByte;
+
                         if (serial_uart.messageReceiveCounter < (serial_uart.messageLength - 2))
                         {
                             serial_uart.messagechecksumValue += receivedByte;
                         }
-                        else
+
+                        else if (serial_uart.messageReceiveCounter == (serial_uart.messageLength - 2))
                         {
-                            if (serial_uart.messageReceiveCounter < (serial_uart.messageLength - 1))
-                                serial_uart.checksumValue = receivedByte;
-                            else
+                            serial_uart.checksumValue = receivedByte;
+                        }
+
+                        else if (serial_uart.messageReceiveCounter == (serial_uart.messageLength - 1))
+                        {
+                            serial_uart.checksumValue = (serial_uart.checksumValue << 8) | receivedByte;
+
+                            if (serial_uart.messagechecksumValue == serial_uart.checksumValue)
                             {
-                                serial_uart.checksumValue += 256 * (receivedByte);
-                                serial_uart.messageStart = false;
-                                serial_uart.messageLengthFirstByteStatus = false;
-                                serial_uart.messageLengthSecondByteStatus = false;
-                                if (serial_uart.messagechecksumValue == serial_uart.checksumValue)
+                                uint16_t packetId = slave_data[4] | (slave_data[5] << 8);
+                                ESP_LOGI("SERIAL_RX", "Packet ID:%d Length:%d", packetId, serial_uart.messageLength);
+                                ESP_LOG_BUFFER_HEX("SERIAL_RAW", slave_data, serial_uart.messageLength + 4);
+
+                                if (packetId == static_cast<uint16_t>(PacketId::CAN1))
                                 {
-                                    serial_uart.CommunicationFlag = 0;
-                                    serial_uart.messageTimeOutCount = 0;
-                                    serial_uart.messageCompletedStatus = true;
-                                    serial_uart.messagechecksumValue = 0;
-                                    serial_uart.checksumValue = 0;
-                                    serial_uart.errorMessage = false;
-                                    if ((slave_data[4] + (slave_data[5] << 8)) == static_cast<uint16_t>(PacketId::CAN1))
-                                    {
-                                        serial->ReceiveData(PacketId::CAN1, &slave_data[6], serial_uart.messageLength - 4);
-                                    }
-                                    else if ((slave_data[4] + (slave_data[5] << 8)) == static_cast<uint16_t>(PacketId::CAN2))
-                                    {
-                                        serial->ReceiveData(PacketId::CAN2, &slave_data[6], serial_uart.messageLength - 4);
-                                    }
-                                    else if ((slave_data[4] + (slave_data[5] << 8)) == static_cast<uint16_t>(PacketId::ENERGY))
-                                    {
-                                        serial->ReceiveData(PacketId::ENERGY, &slave_data[6], serial_uart.messageLength - 4);
-                                    }
-                                    else if ((slave_data[4] + (slave_data[5] << 8)) == static_cast<uint16_t>(PacketId::HeartBeat))
-                                    {
-                                        serial->isActive = true;
-                                        serial->HeartBeatCount = 0;
-                                    }
-                                    else
-                                    {
-                                        serial_uart.errorMessage = true;
-                                        ESP_LOGE(TAG, "Error Message Id %d", (uint16_t)(slave_data[4] + (slave_data[5] << 8)));
-                                    }
+                                    ESP_LOGI("SERIAL_RX", "CAN1 RX Length:%d", serial_uart.messageLength);
+                                    ESP_LOG_BUFFER_HEX("CAN1_DATA", &slave_data[6], serial_uart.messageLength);
+                                    serial->ReceiveData(PacketId::CAN1, &slave_data[6], serial_uart.messageLength - 4);
                                 }
+
+                                else if (packetId == static_cast<uint16_t>(PacketId::CAN2))
+                                {
+                                    serial->ReceiveData(PacketId::CAN2, &slave_data[6], serial_uart.messageLength - 4);
+                                }
+
+                                else if (packetId == static_cast<uint16_t>(PacketId::ENERGY))
+                                {
+                                    serial->ReceiveData(PacketId::ENERGY, &slave_data[6], serial_uart.messageLength);
+                                }
+
+                                else if (packetId == static_cast<uint16_t>(PacketId::HeartBeat))
+                                {
+                                    serial->isActive = true;
+                                    serial->HeartBeatCount = 0;
+                                }
+
                                 else
                                 {
-                                    serial_uart.errorMessage = true;
-                                    serial_uart.messagechecksumValue = 0;
-                                    serial_uart.checksumValue = 0;
-                                    ESP_LOGE(TAG, "Error Message Checksum");
+                                    ESP_LOGE(TAG, "Unknown Packet ID %d", packetId);
                                 }
                             }
+
+                            else
+                            {
+                                ESP_LOGE(TAG, "Checksum Failed RX:%04X CAL:%04X LEN:%d", serial_uart.checksumValue, serial_uart.messagechecksumValue, serial_uart.messageLength);
+                                ESP_LOG_BUFFER_HEX(TAG, slave_data, serial_uart.messageLength + 8);
+                            }
+
+                            memset(&serial_uart, 0, sizeof(serial_uart));
                         }
+
+                        serial_uart.messageReceiveCounter++;
                     }
-                    serial_uart.messageReceiveCounter++;
                 }
             }
         }
@@ -184,7 +180,7 @@ namespace SerialModule
         uart_param_config(SErial_UART, &uart_config);
         uart_set_pin(SErial_UART, ESP_TX_PIN, ESP_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
         uart_driver_install(SErial_UART, 2048, 2048, 0, NULL, 0);
-
+        uart_flush(SErial_UART);
         xTaskCreate(&serialTask, "serialTask", 4096, this, 2, NULL);
 
         this->receiveFunc = func;

@@ -62,6 +62,7 @@ namespace PLCModule
 
     bool PLCController::ReceiveData(const uint32_t id, const uint64_t data)
     {
+        ESP_LOGI("PLC_RX", "CAN ID:0x%08lx DATA:0x%016llx", id, data);
         uint32_t CanId = id & 0xFFFF0FFF;
         uint8_t CmeID = ((id >> 12) & 0x0F);
         uint8_t ConnID = CmeID + 1;
@@ -780,14 +781,12 @@ namespace PLCModule
         moduleStatus[ConnID].evBulkSoC = static_cast<float>(Constants::EVBulkSoC_SNA);
 
         // EVDCChargeTargets
-        moduleStatus[ConnID].evTargetCurrent = static_cast<float>(Constants::EVTargetCurrent_SNA * Constants::CURRENT_SCALE);
-        ESP_LOGI("PLC", "Conn %d | evTargetCurrent = %.1fA", ConnID, moduleStatus[ConnID].evTargetCurrent);
-        moduleStatus[ConnID].evTargetVoltage = static_cast<float>(Constants::EVTargetVoltage_SNA * Constants::VOLTAGE_SCALE);
-        ESP_LOGI("PLC", "Conn %d | evTargetVoltage = %.1fV", ConnID, moduleStatus[ConnID].evTargetVoltage);
-        moduleStatus[ConnID].evPreChargeVoltage = static_cast<float>(Constants::EVPreChargeVoltage_SNA * Constants::VOLTAGE_SCALE);
+        moduleStatus[ConnID].evTargetCurrent = 0.0f;
+        moduleStatus[ConnID].evTargetVoltage = 0.0f;
+        moduleStatus[ConnID].evPreChargeVoltage = 0.0f;
 
         // EVStatusDisplay
-        moduleStatus[ConnID].evSoC = static_cast<uint8_t>(Constants::EVSoC_SNA);
+        moduleStatus[ConnID].evSoC = 0;
         ESP_LOGI("PLC", "Conn %d | evSoC = %d%%", ConnID, moduleStatus[ConnID].evSoC);
         moduleStatus[ConnID].evChargingComplete = EVChargingComplete::SNA;
         moduleStatus[ConnID].evBulkChargingComplete = EVBulkChargingComplete::SNA;
@@ -831,12 +830,8 @@ namespace PLCModule
         moduleStatus[ConnID].evseCurrentRegulationTolerance = static_cast<float>(Constants::EVSECurrentRegulationTolerance_SNA * Constants::CURRENT_REGULATION_SCALE);
 
         // EVSEStatus
-        // moduleStatus[ConnID].EVSEPresentCurrent_ = 0.0f;
-        // moduleStatus[ConnID].EVSEPresentVoltage_ = 0.0f;
-        moduleStatus[ConnID].evsePresentCurrent = static_cast<float>(Constants::EVSEPresentCurrent_SNA * Constants::CURRENT_SCALE);
-        ESP_LOGI("PLC", "Conn %d | evsePresentCurrent = %.1fA", ConnID, moduleStatus[ConnID].evsePresentCurrent);
-        moduleStatus[ConnID].evsePresentVoltage = static_cast<float>(Constants::EVSEPresentVoltage_SNA * Constants::VOLTAGE_SCALE);
-        ESP_LOGI("PLC", "Conn %d | evsePresentVoltage = %.1fV", ConnID, moduleStatus[ConnID].evsePresentVoltage);
+        moduleStatus[ConnID].evsePresentCurrent = 0.0f;
+        moduleStatus[ConnID].evsePresentVoltage = 0.0f;
         moduleStatus[ConnID].evseIsolationStatus = EVSEIsolationStatus::SNA;
         ESP_LOGI("PLC", "Conn %d | evseIsolationStatus = %d", ConnID, moduleStatus[ConnID].evseIsolationStatus);
         moduleStatus[ConnID].evseFreeService = false;

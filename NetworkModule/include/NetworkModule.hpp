@@ -46,7 +46,8 @@ namespace NetworkModule
    // Function pointer types
    // typedef bool (*SendDataFunc)(std::string jsonData);
    typedef bool (*ReceiveDataFunc)(std::string jsonData);
-
+   extern bool wifiConnectStarted;
+   void SafeWifiConnect();
    // C++ interface class with original methods
    class NetworkController
    {

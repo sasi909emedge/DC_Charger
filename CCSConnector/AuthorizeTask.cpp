@@ -25,7 +25,7 @@ namespace CCSConnector
                 // check if any connector charging with this idTag
                 for (uint8_t i = 1; i <= connector->NumberOfConnectors; i++)
                 {
-                    if (memcmp(connector->Rfid_tag, connector->moduleStatus[i].idTag, sizeof(connector->Rfid_tag) == 0) &&
+                    if ((memcmp(connector->Rfid_tag, connector->moduleStatus[i].idTag, sizeof(connector->Rfid_tag)) == 0) &&
                         (connector->moduleStatus[i].stateMachineState == PLCModule::StateMachineState::Charge))
                     {
                         connector->moduleStatus[i].stopReason = OCPPModule::StopReasons::Stop_Local;
@@ -56,12 +56,12 @@ namespace CCSConnector
                     else
                         connector->Set_AUTH_SUCCESS();
                 }
-                else if (connector->isChargerBooted && connector->isWebsocketConnected)
+                else if (connector->isChargerBooted && connector->isWebsocketConnected && strlen(connector->Rfid_tag) > 0)
                 {
                     setNULL(ocpp->CPAuthorizeRequest[ConnID].idTag);
                     setNULL(connector->moduleStatus[ConnID].idTag);
-                    memcpy(ocpp->CPAuthorizeRequest[ConnID].idTag, connector->Rfid_tag, strlen(connector->Rfid_tag));
-                    memcpy(connector->moduleStatus[ConnID].idTag, connector->Rfid_tag, strlen(connector->Rfid_tag));
+                    strncpy(ocpp->CPAuthorizeRequest[ConnID].idTag, connector->Rfid_tag, sizeof(ocpp->CPAuthorizeRequest[ConnID].idTag) - 1);
+                    strncpy(connector->moduleStatus[ConnID].idTag, connector->Rfid_tag, sizeof(connector->moduleStatus[ConnID].idTag) - 1);
                     connector->writeConnectorModuleStatus(ConnID);
                     ocpp->sendAuthorizationRequest(ConnID);
                 }

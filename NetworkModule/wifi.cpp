@@ -162,7 +162,8 @@ namespace NetworkModule
         {
         case WIFI_EVENT_STA_START:
             ESP_LOGI(TAG, "WIFI_EVENT_STA_START");
-            esp_wifi_connect();
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            SafeWifiConnect();
 
             break;
         case WIFI_EVENT_STA_CONNECTED:
@@ -176,13 +177,14 @@ namespace NetworkModule
             ESP_LOGW(TAG, "DISCONNECTED %d: %s", wifi_event_sta_disconnected->reason,
                      get_wifi_disconnection_string(wifi_event_sta_disconnected->reason));
             network->isWifiConnected = false;
-
+            wifiConnectStarted = false;
             xEventGroupSetBits(wifi_events, DISCONNECTED);
             break;
         }
         case IP_EVENT_STA_GOT_IP:
             ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP");
             network->isWifiConnected = true;
+            wifiConnectStarted = false;
             xEventGroupSetBits(wifi_events, CONNECTED);
             break;
 
@@ -207,6 +209,7 @@ namespace NetworkModule
 
     void wifi_initialise(int priority)
     {
+        esp_log_level_set("wifi", ESP_LOG_WARN);
         wifi_events = xEventGroupCreate();
         esp_netif_inherent_config_t esp_netif_config = ESP_NETIF_INHERENT_DEFAULT_WIFI_STA();
         esp_netif_config.route_prio = priority;

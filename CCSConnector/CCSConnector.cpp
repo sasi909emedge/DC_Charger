@@ -190,23 +190,27 @@ namespace CCSConnector
             status.ReservedData.reservationId = cJSON_GetObjectItem(res, "reservationId")->valueint;
 
             cJSON *acMeterValuesFault = cJSON_GetObjectItem(json, "ACMeterValuesFault");
+
             cJSON *acFVolt = cJSON_GetObjectItem(acMeterValuesFault, "voltage");
             for (int i = 0; i < 4; i++)
             {
-                status.ACMeterValues.voltage[i] = cJSON_GetArrayItem(acFVolt, i)->valuedouble;
+                status.ACMeterValuesFault.voltage[i] = cJSON_GetArrayItem(acFVolt, i)->valuedouble;
             }
+
             cJSON *acFCurr = cJSON_GetObjectItem(acMeterValuesFault, "current");
             for (int i = 0; i < 4; i++)
             {
-                status.ACMeterValues.current[i] = cJSON_GetArrayItem(acFCurr, i)->valuedouble;
+                status.ACMeterValuesFault.current[i] = cJSON_GetArrayItem(acFCurr, i)->valuedouble;
             }
+
             cJSON *acFPow = cJSON_GetObjectItem(acMeterValuesFault, "power");
             for (int i = 0; i < 4; i++)
             {
-                status.ACMeterValues.power[i] = cJSON_GetArrayItem(acFPow, i)->valuedouble;
+                status.ACMeterValuesFault.power[i] = cJSON_GetArrayItem(acFPow, i)->valuedouble;
             }
-            status.ACMeterValues.temperature = cJSON_GetObjectItem(acMeterValuesFault, "temperature")->valuedouble;
-            status.ACMeterValues.powerFactor = cJSON_GetObjectItem(acMeterValuesFault, "powerFactor")->valuedouble;
+
+            status.ACMeterValuesFault.temperature = cJSON_GetObjectItem(acMeterValuesFault, "temperature")->valuedouble;
+            status.ACMeterValuesFault.powerFactor = cJSON_GetObjectItem(acMeterValuesFault, "powerFactor")->valuedouble;
 
             cJSON *dcMeterValuesFault = cJSON_GetObjectItem(json, "DCMeterValuesFault");
             status.DCMeterValuesFault.voltage = cJSON_GetObjectItem(dcMeterValuesFault, "voltage")->valuedouble;
@@ -663,7 +667,10 @@ namespace CCSConnector
             finishingStatusPending[i] = false;
             updatingDataToCms[i] = false;
             isConnectorCharging[i] = false;
-
+            memset(&moduleStatus[i].ACMeterValues, 0, sizeof(moduleStatus[i].ACMeterValues));
+            memset(&moduleStatus[i].DCMeterValues, 0, sizeof(moduleStatus[i].DCMeterValues));
+            memset(&moduleStatus[i].ACMeterValuesFault, 0, sizeof(moduleStatus[i].ACMeterValuesFault));
+            memset(&moduleStatus[i].DCMeterValuesFault, 0, sizeof(moduleStatus[i].DCMeterValuesFault));
             ChargingFaultTimeCount[i] = 0;
             ClockAlignedDataCount[i] = 0;
             MeterValueAlignedData[i].temp = 0;

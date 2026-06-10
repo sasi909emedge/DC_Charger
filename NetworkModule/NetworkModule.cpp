@@ -16,6 +16,24 @@ namespace NetworkModule
 {
     static TimerHandle_t shutdown_signal_timer;
     static SemaphoreHandle_t shutdown_sema;
+    bool wifiConnectStarted = false;
+    void SafeWifiConnect()
+    {
+        if (network->isWifiConnected == false && wifiConnectStarted == false)
+        {
+            esp_err_t ret = esp_wifi_connect();
+
+            if (ret == ESP_OK)
+            {
+                wifiConnectStarted = true;
+                ESP_LOGI(TAG, "WiFi connect started");
+            }
+            else
+            {
+                ESP_LOGW(TAG, "WiFi connect skipped: %s", esp_err_to_name(ret));
+            }
+        }
+    }
 
     void updateHighPriorityNetwork(void)
     {
@@ -154,7 +172,7 @@ namespace NetworkModule
             break;
         case WEBSOCKET_EVENT_DISCONNECTED:
             network->isWebsocketConnected = false;
-
+            network->client = NULL;
             ESP_LOGI(TAG_WEBSOCKET, "WEBSOCKET_EVENT_DISCONNECTED");
             log_error_if_nonzero("HTTP status code", data->error_handle.esp_ws_handshake_status_code);
             if (data->error_handle.error_type == WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT)
@@ -183,7 +201,8 @@ namespace NetworkModule
             else
             {
                 ESP_LOGI(TAG_WEBSOCKET, "Received=%.*s", data->data_len, (char *)data->data_ptr);
-                network->ReceiveData(static_cast<std::string>(data->data_ptr));
+                std::string rxData((char *)data->data_ptr, data->data_len);
+                network->ReceiveData(rxData);
             }
 
             xTimerReset(shutdown_signal_timer, portMAX_DELAY);
@@ -312,11 +331,12 @@ namespace NetworkModule
         }
         ESP_LOGI(TAG, "Num of Interfaces %hhu", available_interfaces);
 
-        if (network->HighPriorityNetwork == 0)
-        {
-            esp_wifi_connect();
-        }
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        // if (network->HighPriorityNetwork == 0)
+        // {
+        //     vTaskDelay(pdMS_TO_TICKS(2000));
+        //     SafeWifiConnect();
+        // }
+        vTaskDelay(pdMS_TO_TICKS(5000));
         if (network->isWifiConnected || network->isGsmConnected || network->isEthernetConnected)
         {
             websocket_app_start();
@@ -419,7 +439,7 @@ namespace NetworkModule
                 ESP_LOGD(TAG, "loopCount %ld", loopCount);
 
                 if (network->isWifiConnected == false) // && (FirmwareUpdateStarted == false))
-                    esp_wifi_connect();
+                    SafeWifiConnect();
 
                 if ((network->isWebsocketConnected == false) && (default_netif != NULL))
                 {
@@ -429,7 +449,7 @@ namespace NetworkModule
                     {
                         if (InterfaceId == 0)
                         {
-                            ESP_LOGE(TAG, "Trying Wifi");
+                            ESP_LOGI(TAG, "Trying Wifi");
                         }
                         else if (InterfaceId == 1)
                         {
@@ -441,7 +461,7 @@ namespace NetworkModule
                             EthernetInternetDisconnectTime++;
                         }
 
-                        if (network->isWifiConnected || network->isGsmConnected || network->isEthernetConnected)
+                        if ((network->isWifiConnected || network->isGsmConnected || network->isEthernetConnected) && (network->client == NULL))
                         {
                             websocket_app_start();
                         }
@@ -459,7 +479,7 @@ namespace NetworkModule
                         ((network->HighPriorityNetwork == 1) || (TaskStartedTime > 10)))
                     {
                         if (network->isWifiConnected == false) // && (FirmwareUpdateStarted == false))
-                            esp_wifi_connect();
+                            SafeWifiConnect();
                     }
                 }
 
@@ -521,7 +541,7 @@ namespace NetworkModule
                         if (available_interfaces == 3)
                         {
                             if (network->isWifiConnected == false)
-                                esp_wifi_connect();
+                                SafeWifiConnect();
                             if (config->gsmEnable & network->isGsmConnected &
                                 config->wifiEnable & network->isWifiConnected)
                             {
@@ -555,7 +575,7 @@ namespace NetworkModule
                             else if (config->wifiEnable)
                             {
                                 if (network->isWifiConnected == false)
-                                    esp_wifi_connect();
+                                    SafeWifiConnect();
                                 if (network->isWifiConnected)
                                 {
                                     esp_netif_set_default_netif(network->netif[0]);
@@ -572,7 +592,7 @@ namespace NetworkModule
                         if (available_interfaces == 3)
                         {
                             if (network->isWifiConnected == false)
-                                esp_wifi_connect();
+                                SafeWifiConnect();
                             if (config->wifiEnable & network->isWifiConnected &
                                 config->ethernetEnable & network->isEthernetConnected)
                             {
@@ -603,7 +623,7 @@ namespace NetworkModule
                         else if (available_interfaces == 2)
                         {
                             if (network->isWifiConnected == false)
-                                esp_wifi_connect();
+                                SafeWifiConnect();
                             if (config->wifiEnable & network->isWifiConnected)
                             {
                                 esp_netif_set_default_netif(network->netif[0]);
@@ -668,6 +688,7 @@ namespace NetworkModule
         this->receiveFunc = receiveFunction;
         network = this;
         isWebsocketConnected = false;
+        client = NULL;
         isDiagnosticServerConnected = false;
         isApConnected = false;
         isWifiConnected = false;

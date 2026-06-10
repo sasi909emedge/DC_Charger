@@ -20,6 +20,7 @@
 
 bool SerialReceive(const SerialModule::PacketId id, uint8_t *data, uint16_t length)
 {
+    ESP_LOGI("SERIAL_RX", "Packet:%d Length:%d", (uint16_t)id, length);
     uint8_t receivedData[length];
     std::memcpy(receivedData, data, length);
     ESP_LOGD("SerialReceive", "Received data: ");
@@ -116,12 +117,15 @@ bool SendGpioData(uint8_t id, uint16_t gpio, uint8_t state)
 
 void TimerTask(void)
 {
-    ESP_LOGI(TAG, "Free Heap: %" PRIu32 " bytes", esp_get_minimum_free_heap_size());
+    uint32_t heap = esp_get_minimum_free_heap_size();
+    ESP_LOGI(TAG, "Free Heap: %" PRIu32 " bytes", heap);
     // serial->SendHeartBeat();
 }
 
 extern "C" void app_main(void)
 {
+    esp_log_level_set("*", ESP_LOG_INFO);
+    setvbuf(stdout, NULL, _IONBF, 0);
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
@@ -145,7 +149,7 @@ extern "C" void app_main(void)
     char *configData = NULL;
     if (storage->ReadConfigData(&configData) == ESP_OK)
     {
-        ESP_LOGI(TAG, "Config JSON string: %s", configData);
+        ESP_LOGI(TAG, "Config loaded successfully");
         cJSON *json = cJSON_Parse(configData);
         (void)json;
         free(configData); // free immediately after parsing, cJSON has its own copy
